@@ -1,0 +1,85 @@
+name: Daily Market & Research Report
+
+# 매일 한국 시간 08:00에 실행 (UTC 23:00)
+# 주의: 일광절약시간에 따라 UTC 시간 조정 필요
+on:
+  schedule:
+    # KST 08:00 = UTC 23:00 (겨울, 표준시)
+    # KST 08:00 = UTC 22:00 (여름, 일광절약시간)
+    - cron: '0 23 * * *'  # 겨울 기간 (11월~3월)
+    # - cron: '0 22 * * *'  # 여름 기간 (3월~11월, 필요시 활성화)
+  
+  # 수동 실행 (GitHub Actions UI에서)
+  workflow_dispatch:
+
+jobs:
+  market-report:
+    runs-on: ubuntu-latest
+    
+    environment:
+      name: production
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+      
+      - name: 📦 Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: 🕐 Set timezone to KST
+        run: |
+          sudo timedatectl set-timezone Asia/Seoul
+          date
+      
+      - name: 🚀 Run market report bot
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          python market_research_bot_advanced.py
+      
+      - name: 📊 Upload logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: market-bot-logs
+          path: market_bot.log
+          retention-days: 7
+      
+      - name: 🔔 Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Market bot execution failed"
+          echo "Check logs for details"
+
+  # 선택사항: 주간 요약 리포트
+  weekly-summary:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      
+      - name: 📦 Install dependencies
+        run: |
+          pip install -r requirements.txt
+      
+      - name: 📈 Generate weekly summary
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          echo "Weekly summary would be generated here"
+          python market_research_bot_advanced.py
