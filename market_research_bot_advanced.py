@@ -461,5 +461,24 @@ def main():
         f.write(payload)
     print("\n📄 Payload 저장됨: slack_payload_example.json")
 
+    # 6. Slack 메시지 발송
+    webhook_url = os.environ.get('SLACK_WEBHOOK_URL')
+    if webhook_url:
+        print("\n🚀 Slack 채널로 메시지를 전송합니다...")
+        try:
+            res = requests.post(
+                webhook_url,
+                data=payload.encode('utf-8'),
+                headers={'Content-Type': 'application/json'}
+            )
+            if res.status_code == 200:
+                print("✅ Slack 메시지 전송 성공!")
+            else:
+                print(f"❌ Slack 메시지 전송 실패: {res.status_code} {res.text}")
+        except Exception as e:
+            print(f"❌ Slack 전송 중 오류 발생: {e}")
+    else:
+        print("\n⚠️ SLACK_WEBHOOK_URL 환경변수가 설정되지 않아 메시지 발송을 생략합니다.")
+
 if __name__ == "__main__":
     main()
