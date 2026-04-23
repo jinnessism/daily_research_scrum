@@ -236,10 +236,13 @@ class MarketReasoningAgent:
         gemini_key = os.environ.get('GEMINI_API_KEY')
         if gemini_key:
             models_to_try = [
+                "gemini-3.0-gemma",
                 "gemini-2.5-flash",
                 "gemini-2.0-flash",
+                "gemini-1.5-flash",
                 "gemini-1.5-flash-latest",
-                "gemini-pro"
+                "gemini-pro",
+                "gemma-2-27b-it"
             ]
             for model_name in models_to_try:
                 try:
