@@ -239,6 +239,13 @@ class MarketReasoningAgent:
                 url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}"
                 payload = {"contents": [{"parts": [{"text": prompt}]}]}
                 res = requests.post(url, json=payload, timeout=30)
+                
+                # Fallback to 1.5 Flash if 2.5 is experiencing high demand (503) or not found (404)
+                if res.status_code in [503, 429, 404]:
+                    logger.warning(f"Gemini 2.5 unavailable ({res.status_code}), falling back to 1.5-flash...")
+                    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={gemini_key}"
+                    res = requests.post(url, json=payload, timeout=30)
+
                 if res.status_code == 200:
                     return res.json()['candidates'][0]['content']['parts'][0]['text']
                 else:
