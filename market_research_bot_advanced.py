@@ -235,23 +235,29 @@ class MarketReasoningAgent:
         # 2. Google Gemini
         gemini_key = os.environ.get('GEMINI_API_KEY')
         if gemini_key:
-            try:
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}"
-                payload = {"contents": [{"parts": [{"text": prompt}]}]}
-                res = requests.post(url, json=payload, timeout=30)
-                
-                # Fallback to 1.5 Flash if 2.5 is experiencing high demand (503) or not found (404)
-                if res.status_code in [503, 429, 404]:
-                    logger.warning(f"Gemini 2.5 unavailable ({res.status_code}), falling back to 1.5-flash...")
-                    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={gemini_key}"
+            models_to_try = [
+                "gemini-2.5-flash",
+                "gemini-2.0-flash",
+                "gemini-1.5-flash-latest",
+                "gemini-pro"
+            ]
+            for model_name in models_to_try:
+                try:
+                    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={gemini_key}"
+                    payload = {"contents": [{"parts": [{"text": prompt}]}]}
                     res = requests.post(url, json=payload, timeout=30)
-
-                if res.status_code == 200:
-                    return res.json()['candidates'][0]['content']['parts'][0]['text']
-                else:
-                    logger.warning(f"Gemini API failed with {res.status_code}: {res.text}")
-            except Exception as e:
-                logger.warning(f"Gemini API request failed: {e}")
+                    
+                    if res.status_code == 200:
+                        return res.json()['candidates'][0]['content']['parts'][0]['text']
+                    elif res.status_code in [404, 503, 429]:
+                        logger.warning(f"Gemini {model_name} unavailable ({res.status_code}), trying next model...")
+                        continue
+                    else:
+                        logger.warning(f"Gemini API failed with {res.status_code}: {res.text}")
+                        break
+                except Exception as e:
+                    logger.warning(f"Gemini API request failed for {model_name}: {e}")
+                    continue
                 
         # 3. OpenAI
         openai_key = os.environ.get('OPENAI_API_KEY')
