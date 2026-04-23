@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Advanced Market Data Collection with Real APIs
-실제 한국 주식 데이터 + arXiv 논문 통합
+Real Korean Stock Data + arXiv Papers Integration
 """
 
 import os
@@ -18,40 +18,52 @@ import re
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# ==================== 한국 주식 데이터 수집 (고급) ====================
+# ==================== Korean Market Data Collection (Advanced) ====================
 
 class KoreanMarketDataAdvanced:
-    """한국 주식 시장 데이터 고급 수집"""
+    """Advanced collection of Korean stock market data"""
     
-    # 섹터별 대표 종목 (분류용)
+    # Representative stocks by sector (for classification)
     SECTOR_STOCKS: Dict[str, List[str]] = {
-        '반도체': [
-            'Samsung Electronics', 'SK Hynix', 'Naver',
-            'LG Display', 'Micron', 'ASML'
+        'Semiconductor': [
+            'Samsung Electronics', 'SK Hynix', 'Hanmi Semiconductor', 'Leeno Industrial', 'HPSP',
+            'NVIDIA', 'TSMC', 'ASML', 'Micron', 'AMD', 'Intel'
         ],
-        'AI': [
-            'Naver', 'Kakao', 'LG Electronics',
-            'CJ CGV', 'Kakao Bank', 'Samsung Electronics'
+        'AI/IT': [
+            'NAVER', 'Kakao', 'Samsung SDS', 'Douzone Bizon',
+            'Microsoft', 'Alphabet (Google)', 'Meta', 'Palantir'
         ],
-        '금융': [
-            'Woori Bank', 'Shinhan Financial', 'KB Financial',
-            'Hana Financial', 'NH Investment'
+        'EV/Battery': [
+            'LG Energy Solution', 'POSCO Holdings', 'Ecopro BM', 'Samsung SDI',
+            'Hyundai Motor', 'Kia', 'Tesla', 'BYD', 'Rivian'
         ],
-        '로보틱스': [
-            'Hyundai Robotics', 'Doosan Robotics',
-            'ABB', 'KUKA', 'Yaskawa'
+        'Bio/Pharma': [
+            'Samsung Biologics', 'Celltrion', 'Yuhan', 'Alteogen', 'HLB',
+            'Eli Lilly', 'Novo Nordisk', 'Pfizer', 'Johnson & Johnson'
+        ],
+        'Finance': [
+            'KB Financial', 'Shinhan Financial', 'Hana Financial', 'Woori Financial', 'Meritz Financial',
+            'JPMorgan Chase', 'Bank of America', 'Visa', 'Mastercard'
+        ],
+        'Aerospace/Robotics': [
+            'Doosan Robotics', 'Rainbow Robotics', 'Hanwha Aerospace', 'LIG Nex1',
+            'Intuitive Surgical', 'Lockheed Martin', 'Boston Dynamics'
+        ],
+        'Entertainment/Content': [
+            'HYBE', 'JYP Ent.', 'SM Ent.', 'Krafton', 'NCSoft', 
+            'Netmarble', 'Pearl Abyss', 'Sony', 'Nintendo', 'Disney'
         ]
     }
     
     @staticmethod
     def get_naver_stock_data(stock_name: str) -> Dict:
         """
-        Naver 금융에서 개별 종목 데이터 크롤링
+        Crawl individual stock data from Naver Finance
         
-        주의: 실제 구현 시 robots.txt 및 이용약관 확인 필요
+        Note: Verify robots.txt and terms of service in actual implementation
         """
         try:
-            # 예시 - 실제 구현은 Selenium이나 API 필요
+            # Example - Actual implementation needs Selenium or API
             url = f"https://finance.naver.com/item/main.naver?code={stock_name}"
             headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
@@ -59,7 +71,7 @@ class KoreanMarketDataAdvanced:
             
             # response = requests.get(url, headers=headers, timeout=5)
             # soup = BeautifulSoup(response.text, 'html.parser')
-            # 파싱 로직...
+            # Parsing logic...
             
             return {
                 'name': stock_name,
@@ -68,49 +80,18 @@ class KoreanMarketDataAdvanced:
                 'volume': 'N/A'
             }
         except Exception as e:
-            logger.warning(f"Naver 크롤링 실패 ({stock_name}): {e}")
+            logger.warning(f"Naver crawl failed ({stock_name}): {e}")
             return {}
-    
-    @staticmethod
-    def get_limit_up_stocks() -> Dict[str, List[str]]:
-        """
-        상한가/하한가 종목 조회
-        
-        데이터 소스:
-        1. KRX (한국거래소) API
-        2. Naver 금융 실시간 시세
-        3. 유료 API (TradingView, Bloomberg 등)
-        """
-        try:
-            # KRX API 예시
-            url = "http://data.krx.co.kr/comm/bldAttendant/executePublish.cmd"
-            params = {
-                'pageIndex': 1,
-                'method': 'searchTbTotisuStatus',
-                'bld': 'dbms/comm/c_out_isu_sts'
-            }
-            
-            # response = requests.post(url, data=params, timeout=10)
-            # json_data = response.json()
-            
-            # 임시 데이터
-            return {
-                '상한가': ['Samsung Electronics', 'SK Hynix', 'Naver'],
-                '하한가': ['LG Display']
-            }
-        except Exception as e:
-            logger.warning(f"상한가 데이터 조회 실패: {e}")
-            return {'상한가': [], '하한가': []}
     
     @staticmethod
     def get_sector_analysis() -> Dict:
         """
-        섹터별 상세 분석
+        Detailed sector analysis
         """
         analysis = {}
         
         for sector, stocks in KoreanMarketDataAdvanced.SECTOR_STOCKS.items():
-            # 각 종목 데이터 수집
+            # Collect data for each stock
             sector_data: Dict[str, Any] = {
                 'stocks': [],
                 'avg_change': 0,
@@ -119,7 +100,7 @@ class KoreanMarketDataAdvanced:
                 'sentiment': 'NEUTRAL'
             }
             
-            for stock in stocks[:5]:  # type: ignore # 최상위 5개만
+            for stock in stocks[:5]:  # type: ignore # Top 5 only
                 stock_data = KoreanMarketDataAdvanced.get_naver_stock_data(stock)
                 if stock_data:
                     sector_data['stocks'].append(stock_data)
@@ -131,7 +112,7 @@ class KoreanMarketDataAdvanced:
     @staticmethod
     def get_real_market_data() -> Dict[str, Any]:
         """
-        실제 Naver 금융에서 시장 데이터를 크롤링합니다.
+        Crawl market data from Naver Finance.
         """
         market_data: Dict[str, Any] = {
             'kospi': {'index': 'N/A', 'change': 'N/A'},
@@ -142,7 +123,7 @@ class KoreanMarketDataAdvanced:
         try:
             url = "https://finance.naver.com/"
             res = requests.get(url, timeout=5)
-            # 한글 인코딩 처리
+            # Handle Korean encoding
             res.encoding = 'euc-kr' 
             soup = BeautifulSoup(res.text, "html.parser")
             
@@ -157,40 +138,38 @@ class KoreanMarketDataAdvanced:
             if kosdaq_val and kosdaq_change:
                 market_data['kosdaq'] = {'index': kosdaq_val.text, 'change': kosdaq_change.text.strip()}
                 
-            # 인기 검색 종목
+            # Top Searched Stocks
             pop_list = soup.select("#container > div.aside > div > div.aside_area.aside_popular > table > tbody > tr > th > a")
             top_stocks = [a.text for a in pop_list[:5]]
             
-            # 거래량 상위 종목
+            # Top Volume Stocks
             quant_list = soup.select("#_topItems1 tr th a")
             quant_stocks = [a.text for a in quant_list[:5]]
             
             market_data['sectors'] = {
-                '🔥 인기 검색 종목': {
-                    'high_limit': top_stocks,
-                    'low_limit': [],
-                    'description': '네이버 금융 실시간 인기 검색 상위'
+                '🔥 Top Searched Stocks': {
+                    'top_items': top_stocks,
+                    'description': 'Real-time trending search queries on Naver Finance'
                 },
-                '📈 거래량 집중 종목': {
-                    'high_limit': quant_stocks,
-                    'low_limit': [],
-                    'description': '금일 거래량 상위권 종목'
+                '📈 Top Volume Stocks': {
+                    'top_items': quant_stocks,
+                    'description': 'Top stocks by trading volume today'
                 }
             }
             
         except Exception as e:
-            logger.warning(f"시장 데이터 크롤링 실패: {e}")
+            logger.warning(f"Market data crawl failed: {e}")
             
         return market_data
 
-# ==================== arXiv 논문 수집 (고급) ====================
+# ==================== arXiv Paper Collection (Advanced) ====================
 
 class AdvancedArxivCollector:
-    """arXiv 논문 수집 및 필터링"""
+    """arXiv paper collection and filtering"""
     
     BASE_URL = "http://export.arxiv.org/api/query?"
     
-    # 정제된 검색 쿼리
+    # Refined search queries
     QUERIES = {
         'Diffusion for RL': 'cat:cs.LG AND (title:"Diffusion" OR abs:"diffusion process") AND (title:"Reinforcement Learning" OR title:"RL" OR abs:"policy gradient")',
         
@@ -201,7 +180,7 @@ class AdvancedArxivCollector:
     
     @staticmethod
     def search_papers(query: str, max_results: int = 5) -> List[Dict]:
-        """arXiv 검색 및 결과 정렬"""
+        """arXiv search and sort results"""
         try:
             params = {
                 'search_query': query,
@@ -221,7 +200,7 @@ class AdvancedArxivCollector:
             
             papers = []
             for entry in feed.entries:
-                # 논문 정보 추출
+                # Extract paper information
                 paper: Dict[str, Any] = {
                     'arxiv_id': entry.id.split('/abs/')[-1],
                     'title': entry.title.strip(),
@@ -235,33 +214,33 @@ class AdvancedArxivCollector:
                     'pdf_url': entry.id.replace('/abs/', '/pdf/') + '.pdf'
                 }
                 
-                # 핵심 키워드 추출
+                # Extract main keywords
                 paper['keywords'] = AdvancedArxivCollector._extract_keywords(
                     str(paper['title']) + ' ' + str(paper['summary'])
                 )
                 
                 papers.append(paper)
             
-            logger.info(f"✅ '{query}' - {len(papers)}개 논문 검색")
+            logger.info(f"✅ '{query}' - {len(papers)} papers searched")
             return papers
         
         except requests.Timeout:
-            logger.error(f"❌ arXiv API 타임아웃")
+            logger.error(f"❌ arXiv API timeout")
             return []
         except Exception as e:
-            logger.error(f"❌ arXiv 검색 오류: {e}")
+            logger.error(f"❌ arXiv search error: {e}")
             return []
     
     @staticmethod
     def _extract_keywords(text: str, count: int = 5) -> List[str]:
-        """텍스트에서 주요 키워드 추출"""
-        # 간단한 키워드 추출 (실제로는 NLP 라이브러리 사용)
+        """Extract main keywords from text"""
+        # Simple keyword extraction (in reality, NLP library is used)
         keywords = []
         
-        # 특정 패턴 찾기
+        # Find specific patterns
         patterns = [
             r'\b(diffusion|RL|reinforcement learning|language model|gradient|policy)\b',
-            r'\b([A-Z][A-Za-z0-9]+(?:\s+[A-Z][A-Za-z0-9]+)*)\b'  # 고유명사
+            r'\b([A-Z][A-Za-z0-9]+(?:\s+[A-Z][A-Za-z0-9]+)*)\b'  # Proper nouns
         ]
         
         for pattern in patterns:
@@ -272,7 +251,7 @@ class AdvancedArxivCollector:
     
     @classmethod
     def get_all_papers(cls) -> Dict[str, List[Dict]]:
-        """모든 주제에 대해 논문 검색"""
+        """Search papers for all topics"""
         all_papers = {}
         
         for topic, query in cls.QUERIES.items():
@@ -281,20 +260,79 @@ class AdvancedArxivCollector:
         
         return all_papers
 
-# ==================== Slack 메시지 포맷팅 (고급) ====================
+# ==================== AI Market Analysis (Advanced) ====================
+
+class MarketReasoningAgent:
+    """LLM-based Market Trend & Strength/Weakness Analyzer"""
+    
+    @staticmethod
+    def generate_reasoning(market_data: Dict) -> str:
+        prompt = (
+            f"Here are the KOSPI/KOSDAQ indices and today's major stocks (popular/volume) from the Korean market:\n{market_data}\n\n"
+            "Please provide reasoning on why these stocks rose or gained attention today, and analyze the 'strengths' and 'weaknesses' of each stock or sector.\n"
+            "Also, provide a thoughtful, macro-level reasoning on the overall market movement today compared to the previous trading day in 3-4 paragraphs. "
+            "Use Markdown formatting for readability."
+        )
+        
+        # 1. Anthropic Claude
+        anthropic_key = os.environ.get('ANTHROPIC_API_KEY')
+        if anthropic_key:
+            try:
+                headers = {"x-api-key": anthropic_key, "anthropic-version": "2023-06-01", "content-type": "application/json"}
+                payload = {
+                    "model": "claude-3-5-haiku-latest",
+                    "max_tokens": 1024,
+                    "messages": [{"role": "user", "content": prompt}]
+                }
+                res = requests.post("https://api.anthropic.com/v1/messages", json=payload, headers=headers, timeout=30)
+                if res.status_code == 200:
+                    return res.json()['content'][0]['text']
+            except Exception as e:
+                logger.warning(f"Claude API request failed: {e}")
+                
+        # 2. Google Gemini
+        gemini_key = os.environ.get('GEMINI_API_KEY')
+        if gemini_key:
+            try:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}"
+                payload = {"contents": [{"parts": [{"text": prompt}]}]}
+                res = requests.post(url, json=payload, timeout=30)
+                if res.status_code == 200:
+                    return res.json()['candidates'][0]['content']['parts'][0]['text']
+            except Exception as e:
+                logger.warning(f"Gemini API request failed: {e}")
+                
+        # 3. OpenAI
+        openai_key = os.environ.get('OPENAI_API_KEY')
+        if openai_key:
+            try:
+                headers = {"Authorization": f"Bearer {openai_key}", "Content-Type": "application/json"}
+                payload = {
+                    "model": "gpt-4o-mini",
+                    "messages": [{"role": "user", "content": prompt}]
+                }
+                res = requests.post("https://api.openai.com/v1/chat/completions", json=payload, headers=headers, timeout=30)
+                if res.status_code == 200:
+                    return res.json()['choices'][0]['message']['content']
+            except Exception as e:
+                logger.warning(f"OpenAI API request failed: {e}")
+                
+        return ""
+
+# ==================== Slack Message Formatting (Advanced) ====================
 
 class AdvancedSlackFormatter:
-    """향상된 Slack 메시지 포맷팅"""
+    """Enhanced Slack message formatting"""
     
     @staticmethod
     def create_market_blocks(market_data: Dict) -> List[Dict]:
-        """시장 데이터 Slack 블록 생성"""
+        """Create Slack blocks for market data"""
         blocks: List[Dict[str, Any]] = [
             {
                 "type": "header",
                 "text": {
                     "type": "plain_text",
-                    "text": f"📊 {datetime.now().strftime('%Y년 %m월 %d일')} - 시장 동향",
+                    "text": f"📊 {datetime.now().strftime('%B %d, %Y')} - Market Trends",
                     "emoji": True
                 }
             },
@@ -311,7 +349,7 @@ class AdvancedSlackFormatter:
             {"type": "divider"}
         ]
         
-        # 섹터별 블록
+        # Blocks per sector
         for sector, data in market_data.get('sectors', {}).items():
             blocks.append({
                 "type": "section",
@@ -322,7 +360,7 @@ class AdvancedSlackFormatter:
                     },
                     {
                         "type": "mrkdwn",
-                        "text": f"📈 상한가\n{', '.join(data.get('high_limit', [])[:2]) or 'N/A'}"
+                        "text": f"🚀 Key Stocks\n{', '.join(data.get('top_items', [])[:3]) or 'N/A'}"
                     }
                 ]
             })
@@ -331,7 +369,7 @@ class AdvancedSlackFormatter:
     
     @staticmethod
     def create_paper_blocks(papers_dict: Dict[str, List[Dict]]) -> List[Dict]:
-        """논문 정보 Slack 블록 생성"""
+        """Create Slack blocks for paper information"""
         blocks: List[Dict[str, Any]] = [
             {
                 "type": "divider"
@@ -340,7 +378,7 @@ class AdvancedSlackFormatter:
                 "type": "header",
                 "text": {
                     "type": "plain_text",
-                    "text": "📚 arXiv 최신 논문",
+                    "text": "📚 Latest arXiv Papers",
                     "emoji": True
                 }
             }
@@ -376,33 +414,52 @@ class AdvancedSlackFormatter:
         return blocks
     
     @staticmethod
-    def create_full_payload(market_data: Dict, papers_dict: Dict) -> str:
-        """최종 Slack Payload"""
+    def create_full_payload(market_data: Dict, papers_dict: Dict, ai_reasoning: str = "") -> str:
+        """Final Slack Payload"""
         blocks: List[Dict[str, Any]] = []
         
-        # 헤더
+        # Header
         blocks.append({
             "type": "header",
             "text": {
                 "type": "plain_text",
-                "text": f"🌅 {datetime.now().strftime('%H:%M')} - 아침 시장 & 연구 브리핑",
+                "text": f"🌅 {datetime.now().strftime('%H:%M')} - Morning Market & Research Briefing",
                 "emoji": True
             }
         })
         
-        # 시장 데이터 블록
+        # Market data blocks
         blocks.extend(AdvancedSlackFormatter.create_market_blocks(market_data))
         
-        # 논문 블록
+        # AI reasoning blocks
+        if ai_reasoning:
+            blocks.append({"type": "divider"})
+            blocks.append({
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": "🧠 AI Market Analysis & Reasoning",
+                    "emoji": True
+                }
+            })
+            blocks.append({
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": ai_reasoning
+                }
+            })
+            
+        # Paper blocks
         blocks.extend(AdvancedSlackFormatter.create_paper_blocks(papers_dict))
         
-        # 푸터
+        # Footer
         blocks.append({
             "type": "context",
             "elements": [
                 {
                     "type": "mrkdwn",
-                    "text": f"🤖 자동 수집 | 📍 한국(KST, UTC+9) | 🔄 매일 08:00 갱신"
+                    "text": f"🤖 Auto-collected | 📍 KST (UTC+9) | 🔄 Updates daily at 08:00"
                 }
             ]
         })
@@ -414,37 +471,46 @@ class AdvancedSlackFormatter:
         
         return json.dumps(payload, ensure_ascii=False, indent=2)
 
-# ==================== 메인 실행 ====================
+# ==================== Main Execution ====================
 
 def main():
-    """테스트 실행"""
+    """Test execution"""
     
     print("=" * 60)
-    print("🚀 고급 시장 & 논문 수집 시작")
+    print("🚀 Advanced Market & Paper Collection Started")
     print("=" * 60)
     
-    # 1. 시장 데이터 수집
-    print("\n📊 시장 데이터 수집 중...")
+    # 1. Collect market data
+    print("\n📊 Collecting market data...")
     market_collector = KoreanMarketDataAdvanced()
     market_data = KoreanMarketDataAdvanced.get_real_market_data()
     
-    # 2. arXiv 논문 수집
-    print("📚 arXiv 논문 수집 중...")
+    # 2. Collect arXiv papers
+    print("📚 Collecting arXiv papers...")
     paper_collector = AdvancedArxivCollector()
     papers_dict = paper_collector.get_all_papers()
     
-    # 3. Slack 메시지 생성
-    print("✍️ Slack 메시지 생성 중...")
-    formatter = AdvancedSlackFormatter()
-    payload = formatter.create_full_payload(market_data, papers_dict)
+    # 2.5 AI Reasoning (Execute only on Tue~Sat)
+    ai_reasoning = ""
+    # weekday(): Mon=0, Tue=1, Wed=2, Thu=3, Fri=4, Sat=5, Sun=6
+    if datetime.now().weekday() in (1, 2, 3, 4, 5):
+        print("🧠 Generating AI Market Reasoning...")
+        ai_reasoning = MarketReasoningAgent.generate_reasoning(market_data)
+        if not ai_reasoning:
+            print("⚠️ Skipping AI Reasoning due to missing API Key (OpenAI/Gemini/Claude) or an error.")
     
-    # 4. 결과 출력
+    # 3. Create Slack message
+    print("✍️ Generating Slack message...")
+    formatter = AdvancedSlackFormatter()
+    payload = formatter.create_full_payload(market_data, papers_dict, ai_reasoning)
+    
+    # 4. Print results
     print("\n" + "=" * 60)
-    print("📤 Slack 메시지 미리보기:")
+    print("📤 Slack message preview:")
     print("=" * 60)
     
     payload_json = json.loads(payload)
-    print(f"\n총 {len(payload_json['blocks'])}개 블록 생성됨\n")
+    print(f"\nTotal {len(payload_json['blocks'])} blocks generated\n")
     
     for block in payload_json['blocks'][:3]:
         print(f"[{block.get('type')}]")
@@ -453,18 +519,18 @@ def main():
         print()
     
     print("=" * 60)
-    print("✅ 준비 완료! SLACK_WEBHOOK_URL 설정 후 발송 가능합니다.")
+    print("✅ Ready! The message can be sent once SLACK_WEBHOOK_URL is configured.")
     print("=" * 60)
     
-    # 5. JSON 저장 (검증용)
+    # 5. Save JSON (for verification)
     with open('slack_payload_example.json', 'w', encoding='utf-8') as f:
         f.write(payload)
-    print("\n📄 Payload 저장됨: slack_payload_example.json")
+    print("\n📄 Payload saved: slack_payload_example.json")
 
-    # 6. Slack 메시지 발송
+    # 6. Send Slack message
     webhook_url = os.environ.get('SLACK_WEBHOOK_URL')
     if webhook_url:
-        print("\n🚀 Slack 채널로 메시지를 전송합니다...")
+        print("\n🚀 Sending message to Slack channel...")
         try:
             res = requests.post(
                 webhook_url,
@@ -472,13 +538,13 @@ def main():
                 headers={'Content-Type': 'application/json'}
             )
             if res.status_code == 200:
-                print("✅ Slack 메시지 전송 성공!")
+                print("✅ Slack message sent successfully!")
             else:
-                print(f"❌ Slack 메시지 전송 실패: {res.status_code} {res.text}")
+                print(f"❌ Slack message sending failed: {res.status_code} {res.text}")
         except Exception as e:
-            print(f"❌ Slack 전송 중 오류 발생: {e}")
+            print(f"❌ Error occurred while sending to Slack: {e}")
     else:
-        print("\n⚠️ SLACK_WEBHOOK_URL 환경변수가 설정되지 않아 메시지 발송을 생략합니다.")
+        print("\n⚠️ SLACK_WEBHOOK_URL environment variable is not set. Skipping message dispatch.")
 
 if __name__ == "__main__":
     main()
