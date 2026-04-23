@@ -227,6 +227,8 @@ class MarketReasoningAgent:
                 res = requests.post("https://api.anthropic.com/v1/messages", json=payload, headers=headers, timeout=30)
                 if res.status_code == 200:
                     return res.json()['content'][0]['text']
+                else:
+                    logger.warning(f"Claude API failed with {res.status_code}: {res.text}")
             except Exception as e:
                 logger.warning(f"Claude API request failed: {e}")
                 
@@ -239,6 +241,8 @@ class MarketReasoningAgent:
                 res = requests.post(url, json=payload, timeout=30)
                 if res.status_code == 200:
                     return res.json()['candidates'][0]['content']['parts'][0]['text']
+                else:
+                    logger.warning(f"Gemini API failed with {res.status_code}: {res.text}")
             except Exception as e:
                 logger.warning(f"Gemini API request failed: {e}")
                 
@@ -254,6 +258,8 @@ class MarketReasoningAgent:
                 res = requests.post("https://api.openai.com/v1/chat/completions", json=payload, headers=headers, timeout=30)
                 if res.status_code == 200:
                     return res.json()['choices'][0]['message']['content']
+                else:
+                    logger.warning(f"OpenAI API failed with {res.status_code}: {res.text}")
             except Exception as e:
                 logger.warning(f"OpenAI API request failed: {e}")
                 
@@ -431,7 +437,11 @@ def main():
         logger.info("🧠 Generating AI Market Reasoning...")
         ai_reasoning = MarketReasoningAgent.generate_reasoning(market_data)
         if not ai_reasoning:
-            logger.warning("Skipping AI Reasoning — no API key available (ANTHROPIC_API_KEY / GEMINI_API_KEY / OPENAI_API_KEY)")
+            key_missing = not any(os.environ.get(k) for k in ['ANTHROPIC_API_KEY', 'GEMINI_API_KEY', 'OPENAI_API_KEY'])
+            if key_missing:
+                logger.warning("Skipping AI Reasoning — no API key available (ANTHROPIC_API_KEY / GEMINI_API_KEY / OPENAI_API_KEY)")
+            else:
+                logger.warning("Skipping AI Reasoning — API request failed despite keys being present. Checking logs.")
 
     # 3. Create Slack message
     logger.info("✍️ Generating Slack message...")
