@@ -42,6 +42,9 @@ jobs:
       - name: 🚀 Run market report bot
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           python market_research_bot_advanced.py
       
@@ -59,27 +62,4 @@ jobs:
           echo "❌ Market bot execution failed"
           echo "Check logs for details"
 
-  # 선택사항: 주간 요약 리포트
-  weekly-summary:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch'
-    
-    steps:
-      - name: 📥 Checkout repository
-        uses: actions/checkout@v4
-      
-      - name: 🐍 Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.9'
-      
-      - name: 📦 Install dependencies
-        run: |
-          pip install -r requirements.txt
-      
-      - name: 📈 Generate weekly summary
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: |
-          echo "Weekly summary would be generated here"
-          python market_research_bot_advanced.py
+
