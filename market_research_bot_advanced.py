@@ -15,100 +15,30 @@ from bs4 import BeautifulSoup
 import logging
 import re
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
 logger = logging.getLogger(__name__)
 
 # ==================== Korean Market Data Collection (Advanced) ====================
 
 class KoreanMarketDataAdvanced:
     """Advanced collection of Korean stock market data"""
-    
-    # Representative stocks by sector (for classification)
-    SECTOR_STOCKS: Dict[str, List[str]] = {
-        'Semiconductor': [
-            'Samsung Electronics', 'SK Hynix', 'Hanmi Semiconductor', 'Leeno Industrial', 'HPSP',
-            'NVIDIA', 'TSMC', 'ASML', 'Micron', 'AMD', 'Intel'
-        ],
-        'AI/IT': [
-            'NAVER', 'Kakao', 'Samsung SDS', 'Douzone Bizon',
-            'Microsoft', 'Alphabet (Google)', 'Meta', 'Palantir'
-        ],
-        'EV/Battery': [
-            'LG Energy Solution', 'POSCO Holdings', 'Ecopro BM', 'Samsung SDI',
-            'Hyundai Motor', 'Kia', 'Tesla', 'BYD', 'Rivian'
-        ],
-        'Bio/Pharma': [
-            'Samsung Biologics', 'Celltrion', 'Yuhan', 'Alteogen', 'HLB',
-            'Eli Lilly', 'Novo Nordisk', 'Pfizer', 'Johnson & Johnson'
-        ],
-        'Finance': [
-            'KB Financial', 'Shinhan Financial', 'Hana Financial', 'Woori Financial', 'Meritz Financial',
-            'JPMorgan Chase', 'Bank of America', 'Visa', 'Mastercard'
-        ],
-        'Aerospace/Robotics': [
-            'Doosan Robotics', 'Rainbow Robotics', 'Hanwha Aerospace', 'LIG Nex1',
-            'Intuitive Surgical', 'Lockheed Martin', 'Boston Dynamics'
-        ],
-        'Entertainment/Content': [
-            'HYBE', 'JYP Ent.', 'SM Ent.', 'Krafton', 'NCSoft', 
-            'Netmarble', 'Pearl Abyss', 'Sony', 'Nintendo', 'Disney'
-        ]
-    }
-    
-    @staticmethod
-    def get_naver_stock_data(stock_name: str) -> Dict:
-        """
-        Crawl individual stock data from Naver Finance
-        
-        Note: Verify robots.txt and terms of service in actual implementation
-        """
-        try:
-            # Example - Actual implementation needs Selenium or API
-            url = f"https://finance.naver.com/item/main.naver?code={stock_name}"
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
-            
-            # response = requests.get(url, headers=headers, timeout=5)
-            # soup = BeautifulSoup(response.text, 'html.parser')
-            # Parsing logic...
-            
-            return {
-                'name': stock_name,
-                'price': 'N/A',
-                'change': 'N/A',
-                'volume': 'N/A'
-            }
-        except Exception as e:
-            logger.warning(f"Naver crawl failed ({stock_name}): {e}")
-            return {}
-    
-    @staticmethod
-    def get_sector_analysis() -> Dict:
-        """
-        Detailed sector analysis
-        """
-        analysis = {}
-        
-        for sector, stocks in KoreanMarketDataAdvanced.SECTOR_STOCKS.items():
-            # Collect data for each stock
-            sector_data: Dict[str, Any] = {
-                'stocks': [],
-                'avg_change': 0,
-                'top_gainer': None,
-                'top_loser': None,
-                'sentiment': 'NEUTRAL'
-            }
-            
-            for stock in stocks[:5]:  # type: ignore # Top 5 only
-                stock_data = KoreanMarketDataAdvanced.get_naver_stock_data(stock)
-                if stock_data:
-                    sector_data['stocks'].append(stock_data)
-            
-            analysis[sector] = sector_data
-        
-        return analysis
 
+    _CONFIG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'stocks_config.json')
+
+    try:
+        with open(_CONFIG_PATH, 'r', encoding='utf-8') as _f:
+            SECTOR_STOCKS: Dict[str, List[str]] = json.load(_f).get('sectors', {})
+    except FileNotFoundError:
+        logger.warning(f"stocks_config.json not found — sector list will be empty")
+        SECTOR_STOCKS = {}
+    except Exception as _e:
+        logger.error(f"Failed to load stocks_config.json: {_e}")
+        SECTOR_STOCKS = {}
+    
     @staticmethod
     def get_real_market_data() -> Dict[str, Any]:
         """
@@ -251,13 +181,23 @@ class AdvancedArxivCollector:
     
     @classmethod
     def get_all_papers(cls) -> Dict[str, List[Dict]]:
-        """Search papers for all topics"""
+        """Search papers for all topics (filtered by ARXIV_TOPICS env var if set)"""
         all_papers = {}
-        
-        for topic, query in cls.QUERIES.items():
+
+        env_topics = os.environ.get('ARXIV_TOPICS', '')
+        if env_topics:
+            requested = [t.strip() for t in env_topics.split(',') if t.strip()]
+            unknown = [t for t in requested if t not in cls.QUERIES]
+            if unknown:
+                logger.warning(f"Unknown ARXIV_TOPICS ignored: {unknown}. Valid: {list(cls.QUERIES)}")
+            active_queries = {t: cls.QUERIES[t] for t in requested if t in cls.QUERIES}
+        else:
+            active_queries = cls.QUERIES
+
+        for topic, query in active_queries.items():
             papers = cls.search_papers(query, max_results=3)
             all_papers[topic] = papers
-        
+
         return all_papers
 
 # ==================== AI Market Analysis (Advanced) ====================
@@ -474,63 +414,41 @@ class AdvancedSlackFormatter:
 # ==================== Main Execution ====================
 
 def main():
-    """Test execution"""
-    
-    print("=" * 60)
-    print("🚀 Advanced Market & Paper Collection Started")
-    print("=" * 60)
-    
+    logger.info("🚀 Advanced Market & Paper Collection Started")
+
     # 1. Collect market data
-    print("\n📊 Collecting market data...")
-    market_collector = KoreanMarketDataAdvanced()
+    logger.info("📊 Collecting market data...")
     market_data = KoreanMarketDataAdvanced.get_real_market_data()
-    
+
     # 2. Collect arXiv papers
-    print("📚 Collecting arXiv papers...")
-    paper_collector = AdvancedArxivCollector()
-    papers_dict = paper_collector.get_all_papers()
-    
+    logger.info("📚 Collecting arXiv papers...")
+    papers_dict = AdvancedArxivCollector.get_all_papers()
+
     # 2.5 AI Reasoning (Execute only on Tue~Sat)
-    ai_reasoning = ""
     # weekday(): Mon=0, Tue=1, Wed=2, Thu=3, Fri=4, Sat=5, Sun=6
+    ai_reasoning = ""
     if datetime.now().weekday() in (1, 2, 3, 4, 5):
-        print("🧠 Generating AI Market Reasoning...")
+        logger.info("🧠 Generating AI Market Reasoning...")
         ai_reasoning = MarketReasoningAgent.generate_reasoning(market_data)
         if not ai_reasoning:
-            print("⚠️ Skipping AI Reasoning due to missing API Key (OpenAI/Gemini/Claude) or an error.")
-    
+            logger.warning("Skipping AI Reasoning — no API key available (ANTHROPIC_API_KEY / GEMINI_API_KEY / OPENAI_API_KEY)")
+
     # 3. Create Slack message
-    print("✍️ Generating Slack message...")
-    formatter = AdvancedSlackFormatter()
-    payload = formatter.create_full_payload(market_data, papers_dict, ai_reasoning)
-    
-    # 4. Print results
-    print("\n" + "=" * 60)
-    print("📤 Slack message preview:")
-    print("=" * 60)
-    
+    logger.info("✍️ Generating Slack message...")
+    payload = AdvancedSlackFormatter.create_full_payload(market_data, papers_dict, ai_reasoning)
+
     payload_json = json.loads(payload)
-    print(f"\nTotal {len(payload_json['blocks'])} blocks generated\n")
-    
-    for block in payload_json['blocks'][:3]:
-        print(f"[{block.get('type')}]")
-        if 'text' in block:
-            print(f"  {block['text'].get('text', '')[:80]}...")
-        print()
-    
-    print("=" * 60)
-    print("✅ Ready! The message can be sent once SLACK_WEBHOOK_URL is configured.")
-    print("=" * 60)
-    
-    # 5. Save JSON (for verification)
+    logger.info(f"📤 {len(payload_json['blocks'])} blocks generated")
+
+    # 4. Save JSON (for verification)
     with open('slack_payload_example.json', 'w', encoding='utf-8') as f:
         f.write(payload)
-    print("\n📄 Payload saved: slack_payload_example.json")
+    logger.info("📄 Payload saved: slack_payload_example.json")
 
-    # 6. Send Slack message
+    # 5. Send Slack message
     webhook_url = os.environ.get('SLACK_WEBHOOK_URL')
     if webhook_url:
-        print("\n🚀 Sending message to Slack channel...")
+        logger.info("🚀 Sending message to Slack channel...")
         try:
             res = requests.post(
                 webhook_url,
@@ -538,13 +456,13 @@ def main():
                 headers={'Content-Type': 'application/json'}
             )
             if res.status_code == 200:
-                print("✅ Slack message sent successfully!")
+                logger.info("✅ Slack message sent successfully!")
             else:
-                print(f"❌ Slack message sending failed: {res.status_code} {res.text}")
+                logger.error(f"Slack message sending failed: {res.status_code} {res.text}")
         except Exception as e:
-            print(f"❌ Error occurred while sending to Slack: {e}")
+            logger.error(f"Error occurred while sending to Slack: {e}")
     else:
-        print("\n⚠️ SLACK_WEBHOOK_URL environment variable is not set. Skipping message dispatch.")
+        logger.warning("SLACK_WEBHOOK_URL is not set — skipping message dispatch")
 
 if __name__ == "__main__":
     main()

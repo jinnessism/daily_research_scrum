@@ -1,0 +1,32 @@
+{
+  "sectors": {
+    "Semiconductor": [
+      "Samsung Electronics", "SK Hynix", "Hanmi Semiconductor", "Leeno Industrial", "HPSP",
+      "NVIDIA", "TSMC", "ASML", "Micron", "AMD", "Intel"
+    ],
+    "AI/IT": [
+      "NAVER", "Kakao", "Samsung SDS", "Douzone Bizon",
+      "Microsoft", "Alphabet (Google)", "Meta", "Palantir"
+    ],
+    "EV/Battery": [
+      "LG Energy Solution", "POSCO Holdings", "Ecopro BM", "Samsung SDI",
+      "Hyundai Motor", "Kia", "Tesla", "BYD", "Rivian"
+    ],
+    "Bio/Pharma": [
+      "Samsung Biologics", "Celltrion", "Yuhan", "Alteogen", "HLB",
+      "Eli Lilly", "Novo Nordisk", "Pfizer", "Johnson & Johnson"
+    ],
+    "Finance": [
+      "KB Financial", "Shinhan Financial", "Hana Financial", "Woori Financial", "Meritz Financial",
+      "JPMorgan Chase", "Bank of America", "Visa", "Mastercard"
+    ],
+    "Aerospace/Robotics": [
+      "Doosan Robotics", "Rainbow Robotics", "Hanwha Aerospace", "LIG Nex1",
+      "Intuitive Surgical", "Lockheed Martin", "Boston Dynamics"
+    ],
+    "Entertainment/Content": [
+      "HYBE", "JYP Ent.", "SM Ent.", "Krafton", "NCSoft",
+      "Netmarble", "Pearl Abyss", "Sony", "Nintendo", "Disney"
+    ]
+  }
+}
