@@ -207,11 +207,14 @@ class MarketReasoningAgent:
     
     @staticmethod
     def generate_reasoning(market_data: Dict) -> str:
+        today_date = datetime.now().strftime('%Y-%m-%d')
+        yesterday_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+        
         prompt = (
-            f"Here are the KOSPI/KOSDAQ indices and today's major stocks (popular/volume) from the Korean market:\n{market_data}\n\n"
-            "Please provide reasoning on why these stocks rose or gained attention today, and analyze the 'strengths' and 'weaknesses' of each stock or sector.\n"
-            "Also, provide a thoughtful, macro-level reasoning on the overall market movement today compared to the previous trading day in 3-4 paragraphs. "
-            "Use Markdown formatting for readability."
+            f"Here are the closing KOSPI/KOSDAQ indices and major stocks (popular/volume) from the Korean market for the most recent trading day (yesterday, {yesterday_date}):\n{market_data}\n\n"
+            f"Please provide reasoning on why these stocks rose or gained attention during yesterday ({yesterday_date}), and analyze the 'strengths' and 'weaknesses' of each stock or sector.\n"
+            f"Also, provide a thoughtful, macro-level reasoning on the overall market movement of yesterday ({yesterday_date}) in 3-4 paragraphs. "
+            f"Note: Today is {today_date}. Please use Markdown formatting for readability."
         )
         
         # 1. Anthropic Claude
@@ -237,12 +240,7 @@ class MarketReasoningAgent:
         if gemini_key:
             models_to_try = [
                 "gemma-3-27b-it",
-                "gemini-2.5-flash",
-                "gemini-2.0-flash",
-                "gemini-1.5-flash",
-                "gemini-1.5-flash-8b",
-                "gemini-1.5-pro",
-                "gemini-pro"
+                "gemini-2.5-flash"
             ]
             for model_name in models_to_try:
                 try:
