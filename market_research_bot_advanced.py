@@ -60,13 +60,17 @@ class KoreanMarketDataAdvanced:
             # KOSPI & KOSDAQ
             kospi_val = soup.select_one(".kospi_area .num")
             kospi_change = soup.select_one(".kospi_area .num2")
-            if kospi_val and kospi_change:
-                market_data['kospi'] = {'index': kospi_val.text, 'change': kospi_change.text.strip()}
+            kospi_pct = soup.select_one(".kospi_area .num3")
+            if kospi_val and kospi_change and kospi_pct:
+                sign = "-" if "-" in kospi_pct.text else "+"
+                market_data['kospi'] = {'index': kospi_val.text.strip(), 'change': f"{sign}{kospi_change.text.strip()} ({kospi_pct.text.strip()})"}
                 
             kosdaq_val = soup.select_one(".kosdaq_area .num")
             kosdaq_change = soup.select_one(".kosdaq_area .num2")
-            if kosdaq_val and kosdaq_change:
-                market_data['kosdaq'] = {'index': kosdaq_val.text, 'change': kosdaq_change.text.strip()}
+            kosdaq_pct = soup.select_one(".kosdaq_area .num3")
+            if kosdaq_val and kosdaq_change and kosdaq_pct:
+                sign = "-" if "-" in kosdaq_pct.text else "+"
+                market_data['kosdaq'] = {'index': kosdaq_val.text.strip(), 'change': f"{sign}{kosdaq_change.text.strip()} ({kosdaq_pct.text.strip()})"}
                 
             # Top Searched Stocks
             pop_list = soup.select("#container > div.aside > div > div.aside_area.aside_popular > table > tbody > tr > th > a")
@@ -214,7 +218,7 @@ class MarketReasoningAgent:
             f"Here are the closing KOSPI/KOSDAQ indices and major stocks (popular/volume) from the Korean market for the most recent trading day (yesterday, {yesterday_date}):\n{market_data}\n\n"
             f"Please provide reasoning on why these stocks rose or gained attention during yesterday ({yesterday_date}), and analyze the 'strengths' and 'weaknesses' of each stock or sector.\n"
             f"Also, provide a thoughtful, macro-level reasoning on the overall market movement of yesterday ({yesterday_date}) in 3-4 paragraphs. "
-            f"Note: Today is {today_date}. Please use Markdown formatting for readability."
+            f"Note: Today is {today_date}. CRITICAL: You MUST use Slack mrkdwn formatting (*bold* for emphasis, _italic_) instead of standard Markdown (**bold**). Do NOT use markdown headers like ###."
         )
         
         # 1. Anthropic Claude
