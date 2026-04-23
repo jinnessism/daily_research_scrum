@@ -404,13 +404,16 @@ class AdvancedSlackFormatter:
                     "emoji": True
                 }
             })
-            blocks.append({
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": ai_reasoning
-                }
-            })
+            # Slack mrkdwn text length limit is 3000 characters
+            max_len = 2900
+            for i in range(0, len(ai_reasoning), max_len):
+                blocks.append({
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": ai_reasoning[i:i+max_len]
+                    }
+                })
             
         # Paper blocks
         blocks.extend(AdvancedSlackFormatter.create_paper_blocks(papers_dict))
