@@ -1,32 +1,35 @@
 {
   "sectors": {
-    "Semiconductor": [
-      "Samsung Electronics", "SK Hynix", "Hanmi Semiconductor", "Leeno Industrial", "HPSP",
-      "NVIDIA", "TSMC", "ASML", "Micron", "AMD", "Intel"
-    ],
-    "AI/IT": [
-      "NAVER", "Kakao", "Samsung SDS", "Douzone Bizon",
-      "Microsoft", "Alphabet (Google)", "Meta", "Palantir"
-    ],
-    "EV/Battery": [
-      "LG Energy Solution", "POSCO Holdings", "Ecopro BM", "Samsung SDI",
-      "Hyundai Motor", "Kia", "Tesla", "BYD", "Rivian"
-    ],
-    "Bio/Pharma": [
-      "Samsung Biologics", "Celltrion", "Yuhan", "Alteogen", "HLB",
-      "Eli Lilly", "Novo Nordisk", "Pfizer", "Johnson & Johnson"
-    ],
-    "Finance": [
-      "KB Financial", "Shinhan Financial", "Hana Financial", "Woori Financial", "Meritz Financial",
-      "JPMorgan Chase", "Bank of America", "Visa", "Mastercard"
-    ],
-    "Aerospace/Robotics": [
-      "Doosan Robotics", "Rainbow Robotics", "Hanwha Aerospace", "LIG Nex1",
-      "Intuitive Surgical", "Lockheed Martin", "Boston Dynamics"
-    ],
-    "Entertainment/Content": [
-      "HYBE", "JYP Ent.", "SM Ent.", "Krafton", "NCSoft",
-      "Netmarble", "Pearl Abyss", "Sony", "Nintendo", "Disney"
-    ]
-  }
+    "반도체": {
+      "korean": ["삼성전자", "SK하이닉스", "한미반도체", "리노공업", "HPSP", "솔브레인", "원익IPS", "피에스케이"],
+      "global": ["NVIDIA", "TSMC", "ASML", "Micron", "AMD", "Broadcom", "Intel"]
+    },
+    "AI": {
+      "korean": ["네이버", "카카오", "셀바스AI", "솔트룩스", "코난테크놀로지"],
+      "global": ["Microsoft", "Alphabet", "Meta", "Palantir"]
+    },
+    "IT/플랫폼": {
+      "korean": ["삼성SDS", "카카오뱅크", "더존비즈온", "NICE평가정보", "카카오페이"],
+      "global": ["Amazon", "Apple", "Salesforce", "Oracle", "ServiceNow"]
+    },
+    "EV/배터리": {
+      "korean": ["LG에너지솔루션", "삼성SDI", "SK이노베이션", "에코프로비엠", "포스코퓨처엠", "엘앤에프"],
+      "global": ["Tesla", "BYD", "CATL", "Panasonic Energy"]
+    },
+    "바이오/제약": {
+      "korean": ["삼성바이오로직스", "셀트리온", "유한양행", "알테오젠", "HLB", "한미약품"],
+      "global": ["Eli Lilly", "Novo Nordisk", "Pfizer", "AstraZeneca"]
+    },
+    "금융": {
+      "korean": ["KB금융", "신한지주", "하나금융지주", "우리금융지주", "메리츠금융지주", "미래에셋증권"],
+      "global": ["JPMorgan", "Goldman Sachs", "Visa", "Mastercard"]
+    },
+    "엔터/콘텐츠": {
+      "korean": ["HYBE", "JYP엔터", "SM엔터테인먼트", "크래프톤", "엔씨소프트", "넷마블", "카카오게임즈"],
+      "global": ["Sony", "Nintendo", "Disney", "Netflix"]
+    }
+  },
+  "watchlist": [
+    "삼성전자", "SK하이닉스", "한미반도체", "LG에너지솔루션", "삼성바이오로직스"
+  ]
 }

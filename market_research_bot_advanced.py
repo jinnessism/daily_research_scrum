@@ -31,16 +31,33 @@ class KoreanMarketDataAdvanced:
 
     try:
         with open(_CONFIG_PATH, 'r', encoding='utf-8') as _f:
-            SECTOR_STOCKS: Dict[str, List[str]] = json.load(_f).get('sectors', {})
+            _config = json.load(_f)
+            SECTOR_STOCKS: Dict[str, Dict[str, List[str]]] = _config.get('sectors', {})
+            WATCHLIST: List[str] = _config.get('watchlist', [])
     except FileNotFoundError:
-        logger.warning(f"stocks_config.json not found — sector list will be empty")
+        logger.warning("stocks_config.json not found — sector list will be empty")
         SECTOR_STOCKS = {}
+        WATCHLIST = []
     except Exception as _e:
         logger.error(f"Failed to load stocks_config.json: {_e}")
         SECTOR_STOCKS = {}
-    
-    @staticmethod
-    def get_real_market_data() -> Dict[str, Any]:
+        WATCHLIST = []
+
+    @classmethod
+    def _classify_trending_stocks(cls, stock_names: List[str]) -> Dict[str, Any]:
+        """Cross-reference trending stock names against configured sectors and watchlist."""
+        result: Dict[str, Any] = {'sectors': {}, 'watchlist_hits': []}
+        for name in stock_names:
+            if any(name in w or w in name for w in cls.WATCHLIST):
+                result['watchlist_hits'].append(name)
+            for sector, groups in cls.SECTOR_STOCKS.items():
+                all_stocks = groups.get('korean', []) + groups.get('global', [])
+                if any(name in s or s in name for s in all_stocks):
+                    result['sectors'].setdefault(sector, []).append(name)
+        return result
+
+    @classmethod
+    def get_real_market_data(cls) -> Dict[str, Any]:
         """
         Crawl market data from Naver Finance.
         """
@@ -80,6 +97,9 @@ class KoreanMarketDataAdvanced:
             quant_list = soup.select("#_topItems1 tr th a")
             quant_stocks = [a.text for a in quant_list[:5]]
             
+            all_trending = list(dict.fromkeys(top_stocks + quant_stocks))
+            market_data['classification'] = cls._classify_trending_stocks(all_trending)
+
             market_data['sectors'] = {
                 '🔥 Top Searched Stocks': {
                     'top_items': top_stocks,
@@ -100,17 +120,20 @@ class KoreanMarketDataAdvanced:
 
 class AdvancedArxivCollector:
     """arXiv paper collection and filtering"""
-    
+
     BASE_URL = "http://export.arxiv.org/api/query?"
-    
-    # Refined search queries
-    QUERIES = {
-        'Diffusion for RL': 'cat:cs.LG AND (title:"Diffusion" OR abs:"diffusion process") AND (title:"Reinforcement Learning" OR title:"RL" OR abs:"policy gradient")',
-        
-        'RL for Diffusion': 'cat:cs.LG AND (title:"Reinforcement Learning" OR title:"RL" OR abs:"reward model") AND (title:"Diffusion" OR abs:"diffusion model")',
-        
-        'Diffusion Language Models': 'cat:cs.CL AND (title:"Diffusion" OR abs:"diffusion-based") AND (title:"Language Model" OR title:"LLM" OR abs:"generation")'
-    }
+
+    _QUERIES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'arxiv_queries.json')
+
+    try:
+        with open(_QUERIES_PATH, 'r', encoding='utf-8') as _f:
+            QUERIES: Dict[str, str] = json.load(_f).get('queries', {})
+    except FileNotFoundError:
+        logger.warning("arxiv_queries.json not found — query list will be empty")
+        QUERIES = {}
+    except Exception as _e:
+        logger.error(f"Failed to load arxiv_queries.json: {_e}")
+        QUERIES = {}
     
     @staticmethod
     def search_papers(query: str, max_results: int = 5) -> List[Dict]:
@@ -214,11 +237,23 @@ class MarketReasoningAgent:
         today_date = datetime.now().strftime('%Y-%m-%d')
         yesterday_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
         
+        watchlist_hits = market_data.get('classification', {}).get('watchlist_hits', [])
+        watchlist_note = (
+            f"\n- *Watchlist stocks detected*: {', '.join(watchlist_hits)} — include a focused comment on each of these."
+            if watchlist_hits else ""
+        )
+
         prompt = (
-            f"Here are the closing KOSPI/KOSDAQ indices and major stocks (popular/volume) from the Korean market for the most recent trading day (yesterday, {yesterday_date}):\n{market_data}\n\n"
-            f"Please provide reasoning on why these stocks rose or gained attention during yesterday ({yesterday_date}), and analyze the 'strengths' and 'weaknesses' of each stock or sector.\n"
-            f"Also, provide a thoughtful, macro-level reasoning on the overall market movement of yesterday ({yesterday_date}) in 3-4 paragraphs. "
-            f"Note: Today is {today_date}. CRITICAL: You MUST use Slack mrkdwn formatting (*bold* for emphasis, _italic_) instead of standard Markdown (**bold**). Do NOT use markdown headers like ###."
+            f"Here is the KOSPI/KOSDAQ index data and the most-searched/highest-volume stocks from the Korean market for the most recent trading day (yesterday, {yesterday_date}):\n{market_data}\n\n"
+            f"Today is {today_date}. Provide a *micro-level daily analysis* of yesterday's market ({yesterday_date}). Focus strictly on what happened that specific day:\n\n"
+            f"1. *Per-stock catalyst*: For each trending or high-volume stock listed above, identify the specific news event, announcement, or intraday trigger (e.g. earnings surprise, product launch, analyst upgrade/downgrade, regulatory decision, short squeeze, insider buying) that likely drove its appearance that day. Be concrete — name the event, not just the theme.\n\n"
+            f"2. *Index movement*: Explain the KOSPI/KOSDAQ change using specific same-day catalysts — e.g. a BOK statement, foreign institutional flows, options expiry, a specific earnings release, or a sector-rotation signal. Avoid generic macro narratives.\n\n"
+            f"3. *Notable intraday patterns*: Highlight any unusual volume spikes, late-session reversals, or cross-sector correlations visible in yesterday's data.\n\n"
+            f"STRICT RULES:\n"
+            f"- Minimize references to long-term macro trends (wars, semiconductor supercycles, AI boom). Mention them at most once and only as brief background context; do not dwell on them or use them as the primary explanation.\n"
+            f"- Do NOT give broad sector-level summaries. Every claim must be tied to a specific stock or a specific same-day event.\n"
+            f"- Keep the total response under 400 words.{watchlist_note}\n"
+            f"CRITICAL: Use Slack mrkdwn formatting (*bold*, _italic_). Do NOT use markdown headers (###, ##)."
         )
         
         # 1. Anthropic Claude

@@ -1,0 +1,9 @@
+{
+  "queries": {
+    "Diffusion / Flow as Policy": "cat:cs.LG AND (title:\"Diffusion\" OR title:\"Flow Matching\") AND (title:\"Policy\" OR title:\"Offline Reinforcement Learning\" OR title:\"Imitation Learning\" OR abs:\"diffusion policy\")",
+    "RL Fine-tuning for Diffusion / Flow": "cat:cs.LG AND (title:\"Reinforcement Learning\" OR title:\"RLHF\" OR title:\"Reward\") AND (title:\"Diffusion\" OR title:\"Flow Matching\" OR abs:\"flow matching\")",
+    "Discrete Diffusion for Language": "(cat:cs.CL OR cat:cs.LG) AND (title:\"Discrete Diffusion\" OR title:\"Masked Diffusion\" OR abs:\"discrete diffusion\") AND (abs:\"language\" OR abs:\"text generation\" OR abs:\"token\")",
+    "Flow Matching for RL / Language": "(cat:cs.LG OR cat:cs.CL) AND title:\"Flow Matching\" AND (abs:\"policy\" OR abs:\"reinforcement learning\" OR abs:\"language model\" OR abs:\"sequence generation\")",
+    "Diffusion Language Models": "cat:cs.CL AND (title:\"Diffusion Language Model\" OR title:\"Diffusion LM\" OR (title:\"Diffusion\" AND title:\"Language Model\"))"
+  }
+}
