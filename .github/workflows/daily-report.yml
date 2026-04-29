@@ -1,44 +1,40 @@
 name: Daily Market & Research Report
 
-# 매일 한국 시간 08:00에 실행 (UTC 23:00)
-# 주의: 일광절약시간에 따라 UTC 시간 조정 필요
 on:
   schedule:
-    # KST 08:00 = UTC 23:00 (겨울, 표준시)
-    # KST 08:00 = UTC 22:00 (여름, 일광절약시간)
-    - cron: '0 23 * * *'  # 겨울 기간 (11월~3월)
-    # - cron: '0 22 * * *'  # 여름 기간 (3월~11월, 필요시 활성화)
-  
-  # 수동 실행 (GitHub Actions UI에서)
+    - cron: '0 23 * * *'  # KST 08:00 (UTC 23:00)
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   market-report:
     runs-on: ubuntu-latest
-    
+
     environment:
       name: production
-    
+
     steps:
       - name: 📥 Checkout repository
         uses: actions/checkout@v4
-      
+
       - name: 🐍 Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.9'
           cache: 'pip'
-      
+
       - name: 📦 Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      
+
       - name: 🕐 Set timezone to KST
         run: |
           sudo timedatectl set-timezone Asia/Seoul
           date
-      
+
       - name: 🚀 Run market report bot
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -46,8 +42,17 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          python market_research_bot_advanced.py
-      
+          python main.py
+
+      - name: 💾 Commit DB cache back to repo
+        if: always()
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add db/
+          git diff --staged --quiet || git commit -m "chore: update DB cache [skip ci]"
+          git push
+
       - name: 📊 Upload logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -55,11 +60,9 @@ jobs:
           name: market-bot-logs
           path: market_bot.log
           retention-days: 7
-      
+
       - name: 🔔 Notify on failure
         if: failure()
         run: |
           echo "❌ Market bot execution failed"
           echo "Check logs for details"
-
-
