@@ -32,5 +32,20 @@
       "채비",
       "삼성 인버스 2X WTI원유 선물 ETN"
     ]
+  },
+  {
+    "date": "2026-04-30",
+    "kospi_index": "6,690.90",
+    "kospi_change": "+0.75%",
+    "kosdaq_index": "1,220.26",
+    "kosdaq_change": "+0.39%",
+    "top_searched": [
+      "삼성전자",
+      "SK하이닉스",
+      "삼성SDI",
+      "두산에너빌리..",
+      "현대차"
+    ],
+    "top_volume": []
   }
 ]
