@@ -47,5 +47,26 @@
       "현대차"
     ],
     "top_volume": []
+  },
+  {
+    "date": "2026-05-01",
+    "kospi_index": "6,598.87",
+    "kospi_change": "-1.38%",
+    "kosdaq_index": "1,192.35",
+    "kosdaq_change": "-2.29%",
+    "top_searched": [
+      "삼성전자",
+      "SK하이닉스",
+      "현대차",
+      "두산에너빌리..",
+      "POSCO홀.."
+    ],
+    "top_volume": [
+      "KODEX 200선물인버스2X",
+      "KODEX 인버스",
+      "삼성 인버스 2X WTI원유 선물 ETN",
+      "신한제18호스팩",
+      "대원전선"
+    ]
   }
 ]
