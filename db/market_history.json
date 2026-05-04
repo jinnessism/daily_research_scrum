@@ -1,18 +1,5 @@
 [
   {
-    "date": "2026-04-28",
-    "kospi_index": "6,615.03",
-    "kospi_change": "N/A",
-    "kosdaq_index": "1,226.18",
-    "kosdaq_change": "N/A",
-    "top_searched": [
-      "삼성전자",
-      "SK하이닉스",
-      "에이비엘바이오"
-    ],
-    "top_volume": []
-  },
-  {
     "date": "2026-04-29",
     "kospi_index": "6,690.90",
     "kospi_change": "+0.75%",
@@ -125,5 +112,26 @@
       "삼성SDI"
     ],
     "top_volume": []
+  },
+  {
+    "date": "2026-05-05",
+    "kospi_index": "6,936.99",
+    "kospi_change": "+5.12%",
+    "kosdaq_index": "1,213.74",
+    "kosdaq_change": "+1.79%",
+    "top_searched": [
+      "삼성전자",
+      "SK하이닉스",
+      "현대차",
+      "POSCO홀..",
+      "대한광통신"
+    ],
+    "top_volume": [
+      "KODEX 200선물인버스2X",
+      "KODEX 인버스",
+      "한온시스템",
+      "대한광통신",
+      "SK증권"
+    ]
   }
 ]
