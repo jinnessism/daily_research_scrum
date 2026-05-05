@@ -1,26 +1,5 @@
 [
   {
-    "date": "2026-04-29",
-    "kospi_index": "6,690.90",
-    "kospi_change": "+0.75%",
-    "kosdaq_index": "1,220.26",
-    "kosdaq_change": "+0.39%",
-    "top_searched": [
-      "삼성전자",
-      "SK하이닉스",
-      "삼성SDI",
-      "두산에너빌리..",
-      "현대차"
-    ],
-    "top_volume": [
-      "KODEX 200선물인버스2X",
-      "KODEX 인버스",
-      "오가닉티코스메틱",
-      "채비",
-      "삼성 인버스 2X WTI원유 선물 ETN"
-    ]
-  },
-  {
     "date": "2026-04-30",
     "kospi_index": "6,690.90",
     "kospi_change": "+0.75%",
@@ -133,5 +112,20 @@
       "대한광통신",
       "SK증권"
     ]
+  },
+  {
+    "date": "2026-05-06",
+    "kospi_index": "6,936.99",
+    "kospi_change": "+5.12%",
+    "kosdaq_index": "1,213.74",
+    "kosdaq_change": "+1.79%",
+    "top_searched": [
+      "삼성전자",
+      "SK하이닉스",
+      "현대차",
+      "POSCO홀..",
+      "대우건설"
+    ],
+    "top_volume": []
   }
 ]
