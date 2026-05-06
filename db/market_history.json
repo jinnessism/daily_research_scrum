@@ -1,20 +1,5 @@
 [
   {
-    "date": "2026-04-30",
-    "kospi_index": "6,690.90",
-    "kospi_change": "+0.75%",
-    "kosdaq_index": "1,220.26",
-    "kosdaq_change": "+0.39%",
-    "top_searched": [
-      "삼성전자",
-      "SK하이닉스",
-      "삼성SDI",
-      "두산에너빌리..",
-      "현대차"
-    ],
-    "top_volume": []
-  },
-  {
     "date": "2026-05-01",
     "kospi_index": "6,598.87",
     "kospi_change": "-1.38%",
@@ -125,6 +110,21 @@
       "현대차",
       "POSCO홀..",
       "대우건설"
+    ],
+    "top_volume": []
+  },
+  {
+    "date": "2026-05-07",
+    "kospi_index": "7,384.56",
+    "kospi_change": "+6.45%",
+    "kosdaq_index": "1,210.17",
+    "kosdaq_change": "-0.29%",
+    "top_searched": [
+      "삼성전자",
+      "SK하이닉스",
+      "현대차",
+      "두산에너빌리..",
+      "SKC"
     ],
     "top_volume": []
   }
