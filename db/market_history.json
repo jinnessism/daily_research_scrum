@@ -1,20 +1,5 @@
 [
   {
-    "date": "2026-05-04",
-    "kospi_index": "6,598.87",
-    "kospi_change": "-1.38%",
-    "kosdaq_index": "1,192.35",
-    "kosdaq_change": "-2.29%",
-    "top_searched": [
-      "삼성전자",
-      "SK하이닉스",
-      "현대차",
-      "두산에너빌리..",
-      "삼성SDI"
-    ],
-    "top_volume": []
-  },
-  {
     "date": "2026-05-05",
     "kospi_index": "6,936.99",
     "kospi_change": "+5.12%",
@@ -121,5 +106,20 @@
       "TIGER 200선물인버스2X",
       "KODEX 2차전지산업레버리지"
     ]
+  },
+  {
+    "date": "2026-05-11",
+    "kospi_index": "7,498.00",
+    "kospi_change": "+0.11%",
+    "kosdaq_index": "1,207.72",
+    "kosdaq_change": "+0.71%",
+    "top_searched": [
+      "삼성전자",
+      "SK하이닉스",
+      "현대차",
+      "두산에너빌리..",
+      "대한광통신"
+    ],
+    "top_volume": []
   }
 ]
