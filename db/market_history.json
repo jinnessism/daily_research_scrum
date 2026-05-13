@@ -1,20 +1,5 @@
 [
   {
-    "date": "2026-05-07",
-    "kospi_index": "7,384.56",
-    "kospi_change": "+6.45%",
-    "kosdaq_index": "1,210.17",
-    "kosdaq_change": "-0.29%",
-    "top_searched": [
-      "삼성전자",
-      "SK하이닉스",
-      "현대차",
-      "두산에너빌리..",
-      "SKC"
-    ],
-    "top_volume": []
-  },
-  {
     "date": "2026-05-08",
     "kospi_index": "7,490.05",
     "kospi_change": "+1.43%",
@@ -113,6 +98,21 @@
       "현대차",
       "LG전자",
       "대한광통신"
+    ],
+    "top_volume": []
+  },
+  {
+    "date": "2026-05-14",
+    "kospi_index": "7,844.01",
+    "kospi_change": "+2.63%",
+    "kosdaq_index": "1,176.93",
+    "kosdaq_change": "-0.20%",
+    "top_searched": [
+      "삼성전자",
+      "SK하이닉스",
+      "현대차",
+      "두산에너빌리..",
+      "LG전자"
     ],
     "top_volume": []
   }
