@@ -18,7 +18,7 @@ _QUERIES_PATH = os.path.join(_ROOT, 'arxiv_queries.json')
 _SENT_CACHE_PATH = os.path.join(_ROOT, 'db', 'sent_papers.json')
 
 _BASE_URL = "http://export.arxiv.org/api/query?"
-_USER_AGENT = "daily-research-scrum/1.0 (+https://github.com/; mailto:pjmin831@kaist.ac.kr)"
+_USER_AGENT = "daily-research-scrum/1.0 (+https://github.com/jinnessism/daily_research_scrum)"
 _REQUEST_TIMEOUT = 30
 _INTER_REQUEST_SLEEP = 5.0  # arXiv asks ≥3s between hits; 5s for safety margin
 _MAX_RETRIES = 2
