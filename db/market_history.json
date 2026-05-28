@@ -1,20 +1,5 @@
 [
   {
-    "date": "2026-05-22",
-    "kospi_index": "7,815.59",
-    "kospi_change": "+8.42%",
-    "kosdaq_index": "1,105.97",
-    "kosdaq_change": "+4.73%",
-    "top_searched": [
-      "삼성전자",
-      "SK하이닉스",
-      "LG전자",
-      "현대차",
-      "삼성전기"
-    ],
-    "top_volume": []
-  },
-  {
     "date": "2026-05-23",
     "kospi_index": "7,847.71",
     "kospi_change": "+0.41%",
@@ -127,5 +112,20 @@
       "KODEX SK하이닉스단일종목레버리지",
       "흥아해운"
     ]
+  },
+  {
+    "date": "2026-05-29",
+    "kospi_index": "8,185.29",
+    "kospi_change": "-0.53%",
+    "kosdaq_index": "1,104.36",
+    "kosdaq_change": "-2.54%",
+    "top_searched": [
+      "삼성전자",
+      "SK하이닉스",
+      "삼성전기",
+      "현대차",
+      "LG전자"
+    ],
+    "top_volume": []
   }
 ]
