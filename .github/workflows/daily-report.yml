@@ -2,7 +2,7 @@ name: Daily Market & Research Report
 
 on:
   schedule:
-    - cron: '0 23 * * *'  # KST 08:00 (UTC 23:00)
+    - cron: '0 23 * * 1-5'  # KST Tue–Sat 08:00 (= UTC Mon–Fri 23:00)
   workflow_dispatch:
 
 permissions:

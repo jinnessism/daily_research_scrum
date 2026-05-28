@@ -3,6 +3,7 @@
 import os
 import json
 import re
+import time
 import requests
 import logging
 from datetime import datetime
@@ -17,19 +18,29 @@ _QUERIES_PATH = os.path.join(_ROOT, 'arxiv_queries.json')
 _SENT_CACHE_PATH = os.path.join(_ROOT, 'db', 'sent_papers.json')
 
 _BASE_URL = "http://export.arxiv.org/api/query?"
+_USER_AGENT = "daily-research-scrum/1.0 (+https://github.com/; mailto:pjmin831@kaist.ac.kr)"
+_REQUEST_TIMEOUT = 30
+_INTER_REQUEST_SLEEP = 3.0  # arXiv asks ≥3s between hits from the same client
+_MAX_RETRIES = 2
+
+_WEEKDAY_NAMES = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 
 
 class AdvancedArxivCollector:
 
     try:
         with open(_QUERIES_PATH, 'r', encoding='utf-8') as _f:
-            QUERIES: Dict[str, str] = json.load(_f).get('queries', {})
+            _CFG = json.load(_f)
+            QUERIES: Dict[str, str] = _CFG.get('queries', {})
+            SCHEDULE: Dict[str, List[str]] = _CFG.get('schedule', {})
     except FileNotFoundError:
         logger.warning("arxiv_queries.json not found — query list will be empty")
         QUERIES = {}
+        SCHEDULE = {}
     except Exception as _e:
         logger.error(f"Failed to load arxiv_queries.json: {_e}")
         QUERIES = {}
+        SCHEDULE = {}
 
     @staticmethod
     def _load_sent_cache() -> Dict[str, str]:
@@ -49,52 +60,84 @@ class AdvancedArxivCollector:
         with open(_SENT_CACHE_PATH, 'w', encoding='utf-8') as f:
             json.dump(cache, f, ensure_ascii=False, indent=2)
 
+    @staticmethod
+    def _fetch(query: str, max_results: int) -> bytes:
+        """GET arXiv with retry/backoff on 429 + timeout. Returns response body or b''."""
+        params = {
+            'search_query': query,
+            'start': 0,
+            'max_results': max_results,
+            'sortBy': 'submittedDate',
+            'sortOrder': 'descending',
+        }
+        headers = {'User-Agent': _USER_AGENT}
+
+        for attempt in range(_MAX_RETRIES + 1):
+            try:
+                resp = requests.get(_BASE_URL, params=params, headers=headers, timeout=_REQUEST_TIMEOUT)
+                if resp.status_code == 429:
+                    wait = int(resp.headers.get('Retry-After', 0)) or (5 * (attempt + 1))
+                    logger.warning(f"arXiv 429 (rate limited) — sleeping {wait}s (attempt {attempt + 1}/{_MAX_RETRIES + 1})")
+                    time.sleep(wait)
+                    continue
+                resp.raise_for_status()
+                resp.encoding = 'utf-8'
+                return resp.content
+            except requests.Timeout:
+                wait = 5 * (attempt + 1)
+                logger.warning(f"arXiv timeout — retrying in {wait}s (attempt {attempt + 1}/{_MAX_RETRIES + 1})")
+                time.sleep(wait)
+            except requests.RequestException as e:
+                logger.error(f"arXiv request error: {e}")
+                return b''
+        logger.error(f"arXiv giving up after {_MAX_RETRIES + 1} attempts: {query[:60]}...")
+        return b''
+
     @classmethod
     def search_papers(cls, query: str, max_new: int = 3) -> List[Dict]:
         sent = cls._load_sent_cache()
-        try:
-            params = {
-                'search_query': query,
-                'start': 0,
-                'max_results': max_new * 4,  # Fetch extra to cover cache hits
-                'sortBy': 'submittedDate',
-                'sortOrder': 'descending'
+        content = cls._fetch(query, max_results=max_new * 4)  # Extra for cache hits
+        if not content:
+            logger.info(f"✅ '{query[:60]}...' — 0 new papers (no response)")
+            return []
+
+        feed = feedparser.parse(content)
+        new_papers: List[Dict] = []
+        for entry in feed.entries:
+            arxiv_id = entry.id.split('/abs/')[-1]
+            if arxiv_id in sent:
+                continue
+            paper: Dict[str, Any] = {
+                'arxiv_id': arxiv_id,
+                'title': entry.title.strip(),
+                'authors': [author.name for author in entry.authors[:3]],
+                'published': entry.published[:10],
+                'updated': entry.updated[:10],
+                'summary': entry.summary.replace('\n', ' ').strip(),
+                'summary_short': entry.summary.replace('\n', ' ').strip()[:250] + '...',
+                'categories': entry.get('arxiv_primary_category', {}).get('term', 'cs.LG'),
+                'url': entry.id,
+                'pdf_url': entry.id.replace('/abs/', '/pdf/') + '.pdf',
+                'keywords': _extract_keywords(entry.title + ' ' + entry.summary),
             }
-            response = requests.get(_BASE_URL, params=params, timeout=15)
-            response.encoding = 'utf-8'
-            feed = feedparser.parse(response.content)
+            new_papers.append(paper)
+            if len(new_papers) >= max_new:
+                break
 
-            new_papers = []
-            for entry in feed.entries:
-                arxiv_id = entry.id.split('/abs/')[-1]
-                if arxiv_id in sent:
-                    continue
-                paper: Dict[str, Any] = {
-                    'arxiv_id': arxiv_id,
-                    'title': entry.title.strip(),
-                    'authors': [author.name for author in entry.authors[:3]],
-                    'published': entry.published[:10],
-                    'updated': entry.updated[:10],
-                    'summary': entry.summary.replace('\n', ' ').strip(),
-                    'summary_short': entry.summary.replace('\n', ' ').strip()[:250] + '...',
-                    'categories': entry.get('arxiv_primary_category', {}).get('term', 'cs.LG'),
-                    'url': entry.id,
-                    'pdf_url': entry.id.replace('/abs/', '/pdf/') + '.pdf',
-                    'keywords': _extract_keywords(entry.title + ' ' + entry.summary)
-                }
-                new_papers.append(paper)
-                if len(new_papers) >= max_new:
-                    break
+        logger.info(f"✅ '{query[:60]}...' — {len(new_papers)} new papers")
+        return new_papers
 
-            logger.info(f"✅ '{query[:60]}...' — {len(new_papers)} new papers")
-            return new_papers
-
-        except requests.Timeout:
-            logger.error("arXiv API timeout")
-            return []
-        except Exception as e:
-            logger.error(f"arXiv search error: {e}")
-            return []
+    @classmethod
+    def _topics_for_today(cls) -> List[str]:
+        """Pick today's topics from schedule (KST weekday). Empty list = no topics scheduled."""
+        if not cls.SCHEDULE:
+            return list(cls.QUERIES.keys())
+        today_name = _WEEKDAY_NAMES[datetime.now().weekday()]
+        topics = cls.SCHEDULE.get(today_name, [])
+        unknown = [t for t in topics if t not in cls.QUERIES]
+        if unknown:
+            logger.warning(f"Scheduled topics not found in queries: {unknown}")
+        return [t for t in topics if t in cls.QUERIES]
 
     @classmethod
     def get_all_papers(cls) -> Dict[str, List[Dict]]:
@@ -104,20 +147,27 @@ class AdvancedArxivCollector:
             unknown = [t for t in requested if t not in cls.QUERIES]
             if unknown:
                 logger.warning(f"Unknown ARXIV_TOPICS ignored: {unknown}. Valid: {list(cls.QUERIES)}")
-            active_queries = {t: cls.QUERIES[t] for t in requested if t in cls.QUERIES}
+            active_topics = [t for t in requested if t in cls.QUERIES]
         else:
-            active_queries = cls.QUERIES
+            active_topics = cls._topics_for_today()
 
-        all_papers = {}
-        for topic, query in active_queries.items():
-            all_papers[topic] = cls.search_papers(query, max_new=3)
+        if not active_topics:
+            logger.info(f"📭 No topics scheduled for {_WEEKDAY_NAMES[datetime.now().weekday()]}")
+            return {}
+
+        logger.info(f"📚 Today's topics ({len(active_topics)}): {active_topics}")
+        all_papers: Dict[str, List[Dict]] = {}
+        for i, topic in enumerate(active_topics):
+            if i > 0:
+                time.sleep(_INTER_REQUEST_SLEEP)
+            all_papers[topic] = cls.search_papers(cls.QUERIES[topic], max_new=3)
         return all_papers
 
 
 def _extract_keywords(text: str, count: int = 5) -> List[str]:
     keywords: List[str] = []
     patterns = [
-        r'\b(diffusion|flow matching|RL|reinforcement learning|language model|RAG|retrieval|image retrieval)\b',
+        r'\b(diffusion|flow matching|RL|reinforcement learning|language model|RAG|retrieval|query rewriting|query refinement|soft query)\b',
         r'\b([A-Z][A-Za-z0-9]+(?:\s+[A-Z][A-Za-z0-9]+)*)\b'
     ]
     for pattern in patterns:

@@ -7,5 +7,20 @@
     "Diffusion Language Models": "cat:cs.CL AND (title:\"Diffusion Language Model\" OR title:\"Diffusion LM\" OR (title:\"Diffusion\" AND title:\"Language Model\"))",
     "Soft Query Refinement": "(cat:cs.IR OR cat:cs.CL OR cat:cs.LG) AND (abs:\"soft query\" OR abs:\"soft query refinement\" OR abs:\"soft query expansion\" OR abs:\"latent query refinement\" OR abs:\"continuous query\" OR (abs:\"query embedding\" AND (abs:\"refinement\" OR abs:\"reformulation\" OR abs:\"rewriting\")))",
     "Query Reformulation for Retrieval / RAG": "(cat:cs.IR OR cat:cs.CL) AND (title:\"Query Rewriting\" OR title:\"Query Reformulation\" OR title:\"Query Refinement\" OR title:\"Query Expansion\" OR abs:\"query rewriting\" OR abs:\"query reformulation\" OR abs:\"query refinement\") AND (abs:\"retrieval\" OR abs:\"dense retrieval\" OR abs:\"retrieval-augmented\" OR abs:\"RAG\")"
+  },
+  "schedule": {
+    "tuesday": [
+      "Diffusion / Flow as Policy",
+      "RL Fine-tuning for Diffusion / Flow"
+    ],
+    "thursday": [
+      "Discrete Diffusion for Language",
+      "Flow Matching for RL / Language",
+      "Diffusion Language Models"
+    ],
+    "friday": [
+      "Soft Query Refinement",
+      "Query Reformulation for Retrieval / RAG"
+    ]
   }
 }
