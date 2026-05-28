@@ -92,7 +92,7 @@ class MarketReasoningAgent:
         # 2. Google Gemini
         gemini_key = os.environ.get('GEMINI_API_KEY')
         if gemini_key:
-            for model_name in ["gemma-3-27b-it", "gemini-2.5-flash"]:
+            for model_name in ["gemma-3-27b-it", "gemini-3.5-flash", "gemini-2.5-flash"]:
                 try:
                     url = (
                         f"https://generativelanguage.googleapis.com/v1beta/models/"
