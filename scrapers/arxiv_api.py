@@ -20,8 +20,10 @@ _SENT_CACHE_PATH = os.path.join(_ROOT, 'db', 'sent_papers.json')
 _BASE_URL = "http://export.arxiv.org/api/query?"
 _USER_AGENT = "daily-research-scrum/1.0 (+https://github.com/; mailto:pjmin831@kaist.ac.kr)"
 _REQUEST_TIMEOUT = 30
-_INTER_REQUEST_SLEEP = 3.0  # arXiv asks ≥3s between hits from the same client
+_INTER_REQUEST_SLEEP = 5.0  # arXiv asks ≥3s between hits; 5s for safety margin
 _MAX_RETRIES = 2
+_BACKOFF_429 = [30, 90, 300]  # seconds to wait per attempt when arXiv returns 429
+_BACKOFF_TIMEOUT = [5, 10, 15]  # seconds to wait per attempt on network timeout
 
 _WEEKDAY_NAMES = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 
@@ -61,8 +63,8 @@ class AdvancedArxivCollector:
             json.dump(cache, f, ensure_ascii=False, indent=2)
 
     @staticmethod
-    def _fetch(query: str, max_results: int) -> bytes:
-        """GET arXiv with retry/backoff on 429 + timeout. Returns response body or b''."""
+    def _fetch(query: str, max_results: int) -> tuple:
+        """GET arXiv with retry/backoff on 429 + timeout. Returns (content, hit_429)."""
         params = {
             'search_query': query,
             'start': 0,
@@ -76,30 +78,32 @@ class AdvancedArxivCollector:
             try:
                 resp = requests.get(_BASE_URL, params=params, headers=headers, timeout=_REQUEST_TIMEOUT)
                 if resp.status_code == 429:
-                    wait = int(resp.headers.get('Retry-After', 0)) or (5 * (attempt + 1))
+                    retry_after = int(resp.headers.get('Retry-After', 0))
+                    wait = retry_after or _BACKOFF_429[min(attempt, len(_BACKOFF_429) - 1)]
                     logger.warning(f"arXiv 429 (rate limited) — sleeping {wait}s (attempt {attempt + 1}/{_MAX_RETRIES + 1})")
                     time.sleep(wait)
                     continue
                 resp.raise_for_status()
                 resp.encoding = 'utf-8'
-                return resp.content
+                return resp.content, False
             except requests.Timeout:
-                wait = 5 * (attempt + 1)
+                wait = _BACKOFF_TIMEOUT[min(attempt, len(_BACKOFF_TIMEOUT) - 1)]
                 logger.warning(f"arXiv timeout — retrying in {wait}s (attempt {attempt + 1}/{_MAX_RETRIES + 1})")
                 time.sleep(wait)
             except requests.RequestException as e:
                 logger.error(f"arXiv request error: {e}")
-                return b''
+                return b'', False
         logger.error(f"arXiv giving up after {_MAX_RETRIES + 1} attempts: {query[:60]}...")
-        return b''
+        return b'', True  # treat exhausted retries as 429 penalty signal
 
     @classmethod
-    def search_papers(cls, query: str, max_new: int = 3) -> List[Dict]:
+    def search_papers(cls, query: str, max_new: int = 3) -> tuple:
+        """Returns (papers, hit_429). hit_429 signals caller to abort remaining topics."""
         sent = cls._load_sent_cache()
-        content = cls._fetch(query, max_results=max_new * 4)  # Extra for cache hits
+        content, hit_429 = cls._fetch(query, max_results=max_new * 4)
         if not content:
             logger.info(f"✅ '{query[:60]}...' — 0 new papers (no response)")
-            return []
+            return [], hit_429
 
         feed = feedparser.parse(content)
         new_papers: List[Dict] = []
@@ -125,7 +129,7 @@ class AdvancedArxivCollector:
                 break
 
         logger.info(f"✅ '{query[:60]}...' — {len(new_papers)} new papers")
-        return new_papers
+        return new_papers, False
 
     @classmethod
     def _topics_for_today(cls) -> List[str]:
@@ -160,7 +164,15 @@ class AdvancedArxivCollector:
         for i, topic in enumerate(active_topics):
             if i > 0:
                 time.sleep(_INTER_REQUEST_SLEEP)
-            all_papers[topic] = cls.search_papers(cls.QUERIES[topic], max_new=3)
+            papers, hit_429 = cls.search_papers(cls.QUERIES[topic], max_new=3)
+            all_papers[topic] = papers
+            if hit_429:
+                remaining = active_topics[i + 1:]
+                if remaining:
+                    logger.warning(f"🛑 Skipping {len(remaining)} remaining topics due to arXiv penalty: {remaining}")
+                    for t in remaining:
+                        all_papers[t] = []
+                break
         return all_papers
 
 
