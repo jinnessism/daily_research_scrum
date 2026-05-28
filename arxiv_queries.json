@@ -5,7 +5,7 @@
     "Discrete Diffusion for Language": "(cat:cs.CL OR cat:cs.LG) AND (title:\"Discrete Diffusion\" OR title:\"Masked Diffusion\" OR abs:\"discrete diffusion\") AND (abs:\"language\" OR abs:\"text generation\" OR abs:\"token\")",
     "Flow Matching for RL / Language": "(cat:cs.LG OR cat:cs.CL) AND title:\"Flow Matching\" AND (abs:\"policy\" OR abs:\"reinforcement learning\" OR abs:\"language model\" OR abs:\"sequence generation\")",
     "Diffusion Language Models": "cat:cs.CL AND (title:\"Diffusion Language Model\" OR title:\"Diffusion LM\" OR (title:\"Diffusion\" AND title:\"Language Model\"))",
-    "RL for RAG": "(cat:cs.CL OR cat:cs.LG OR cat:cs.IR) AND (title:\"Retrieval-Augmented\" OR title:\"RAG\" OR abs:\"retrieval-augmented generation\") AND (title:\"Reinforcement Learning\" OR title:\"RL\" OR abs:\"reinforcement learning\")",
-    "RL for Image Retrieval": "(cat:cs.CV OR cat:cs.LG OR cat:cs.IR) AND (title:\"Image Retrieval\" OR title:\"Visual Retrieval\" OR title:\"Visual Search\" OR abs:\"image retrieval\") AND (title:\"Reinforcement Learning\" OR title:\"RL\" OR abs:\"reinforcement learning\")"
+    "Soft Query Refinement": "(cat:cs.IR OR cat:cs.CL OR cat:cs.LG) AND (abs:\"soft query\" OR abs:\"soft query refinement\" OR abs:\"soft query expansion\" OR abs:\"latent query refinement\" OR abs:\"continuous query\" OR (abs:\"query embedding\" AND (abs:\"refinement\" OR abs:\"reformulation\" OR abs:\"rewriting\")))",
+    "Query Reformulation for Retrieval / RAG": "(cat:cs.IR OR cat:cs.CL) AND (title:\"Query Rewriting\" OR title:\"Query Reformulation\" OR title:\"Query Refinement\" OR title:\"Query Expansion\" OR abs:\"query rewriting\" OR abs:\"query reformulation\" OR abs:\"query refinement\") AND (abs:\"retrieval\" OR abs:\"dense retrieval\" OR abs:\"retrieval-augmented\" OR abs:\"RAG\")"
   }
 }
