@@ -1,20 +1,5 @@
 [
   {
-    "date": "2026-05-27",
-    "kospi_index": "8,047.51",
-    "kospi_change": "+2.55%",
-    "kosdaq_index": "1,172.52",
-    "kosdaq_change": "+0.98%",
-    "top_searched": [
-      "삼성전자",
-      "SK하이닉스",
-      "삼성전기",
-      "현대차",
-      "LG전자"
-    ],
-    "top_volume": []
-  },
-  {
     "date": "2026-05-28",
     "kospi_index": "8,185.29",
     "kospi_change": "-0.53%",
@@ -119,6 +104,21 @@
       "LG전자",
       "NAVER",
       "삼성전기"
+    ],
+    "top_volume": []
+  },
+  {
+    "date": "2026-06-05",
+    "kospi_index": "8,639.41",
+    "kospi_change": "-1.84%",
+    "kosdaq_index": "1,049.73",
+    "kosdaq_change": "+2.31%",
+    "top_searched": [
+      "삼성전자",
+      "SK하이닉스",
+      "LG전자",
+      "NAVER",
+      "현대차"
     ],
     "top_volume": []
   }
