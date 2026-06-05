@@ -1,26 +1,5 @@
 [
   {
-    "date": "2026-05-28",
-    "kospi_index": "8,185.29",
-    "kospi_change": "-0.53%",
-    "kosdaq_index": "1,104.36",
-    "kosdaq_change": "-2.54%",
-    "top_searched": [
-      "삼성전자",
-      "SK하이닉스",
-      "삼성전기",
-      "현대차",
-      "LG전자"
-    ],
-    "top_volume": [
-      "KODEX 200선물인버스2X",
-      "KODEX 인버스",
-      "TIGER 200선물인버스2X",
-      "KODEX SK하이닉스단일종목레버리지",
-      "흥아해운"
-    ]
-  },
-  {
     "date": "2026-05-29",
     "kospi_index": "8,185.29",
     "kospi_change": "-0.53%",
@@ -121,5 +100,26 @@
       "현대차"
     ],
     "top_volume": []
+  },
+  {
+    "date": "2026-06-06",
+    "kospi_index": "8,160.59",
+    "kospi_change": "-5.54%",
+    "kosdaq_index": "1,002.44",
+    "kosdaq_change": "-4.50%",
+    "top_searched": [
+      "삼성전자",
+      "SK하이닉스",
+      "LG전자",
+      "NAVER",
+      "현대차"
+    ],
+    "top_volume": [
+      "KODEX 200선물인버스2X",
+      "KODEX 인버스",
+      "대신밸런스제20호스팩",
+      "삼성 인버스 2X WTI원유 선물 ETN",
+      "KODEX SK하이닉스단일종목레버리지"
+    ]
   }
 ]
