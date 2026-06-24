@@ -54,6 +54,56 @@ class AdvancedSlackFormatter:
         return blocks
 
     @staticmethod
+    def create_global_blocks(global_context: Dict) -> List[Dict]:
+        """Render overnight US/FX market context. Returns [] when nothing to show."""
+        if not global_context:
+            return []
+
+        order = ['usdkrw', 'nasdaq', 'sp500', 'sox']
+        emojis = {
+            'usdkrw': '💱',
+            'nasdaq': '💻',
+            'sp500': '📈',
+            'sox': '🔌',
+        }
+
+        lines = []
+        for key in order:
+            entry = global_context.get(key)
+            if not entry:
+                continue
+            change = entry.get('change', '')
+            # Reuse the existing +/- sign convention; add ▲/▼ arrows for clarity.
+            arrow = ''
+            if change.startswith('+'):
+                arrow = '▲ '
+            elif change.startswith('-'):
+                arrow = '▼ '
+            lines.append(
+                f"{emojis.get(key, '•')} *{entry.get('label', key)}* | "
+                f"{entry.get('value', 'N/A')} {arrow}{change}".rstrip()
+            )
+
+        if not lines:
+            return []
+
+        return [
+            {"type": "divider"},
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": "🌐 Global / Overnight Markets",
+                    "emoji": True
+                }
+            },
+            {
+                "type": "section",
+                "text": {"type": "mrkdwn", "text": "\n".join(lines)}
+            }
+        ]
+
+    @staticmethod
     def create_paper_blocks(papers_dict: Dict[str, List[Dict]]) -> List[Dict]:
         blocks: List[Dict[str, Any]] = [
             {"type": "divider"},
@@ -100,7 +150,8 @@ class AdvancedSlackFormatter:
     def create_full_payload(
         market_data: Dict,
         papers_dict: Dict[str, List[Dict]],
-        ai_reasoning: str = ""
+        ai_reasoning: str = "",
+        global_context: Dict = None
     ) -> str:
         blocks: List[Dict[str, Any]] = [
             {
@@ -114,6 +165,8 @@ class AdvancedSlackFormatter:
         ]
 
         blocks.extend(AdvancedSlackFormatter.create_market_blocks(market_data))
+
+        blocks.extend(AdvancedSlackFormatter.create_global_blocks(global_context))
 
         if ai_reasoning:
             blocks.append({"type": "divider"})
