@@ -44,7 +44,7 @@ function tokenize(line: string): Tok[] {
   const n = line.length;
   while (i < n) {
     const c = line[i];
-    if (c === ' ' || c === '\t') {
+    if (c === ' ' || c === '\t' || c === '\n' || c === '\r') {
       i++;
       continue;
     }
@@ -372,7 +372,18 @@ class Interpreter {
     const out = new Float64Array(m * n);
     for (let i = 0; i < m; i++)
       for (let j = 0; j < n; j++) out[j * m + i] = t.data[i * n + j];
-    return new Tensor(out, [n, m]);
+    const result = new Tensor(out, [n, m], t.requires_grad);
+    result._op = 't';
+    result._prev = [t];
+    result._backward = () => {
+      if (!result.grad || !t.requires_grad) return;
+      // The transposed output has shape [n, m]; route each gradient back.
+      const gT = new Float64Array(m * n);
+      for (let i = 0; i < n; i++)
+        for (let j = 0; j < m; j++) gT[j * n + i] = result.grad[i * m + j];
+      t.accumGrad(gT);
+    };
+    return result;
   }
 
   evalCall(node: Extract<Node, { k: 'call' }>): Value {
@@ -492,20 +503,67 @@ class Interpreter {
   }
 }
 
+/**
+ * Group physical lines into logical statements, joining any line whose brackets
+ * or parens are still open onto the following one (so multi-line tensor literals
+ * work). Trailing `#` comments and string contents are ignored when counting
+ * depth. `lineNo` is the 0-based physical line where the statement began.
+ */
+function splitLogicalLines(src: string): { text: string; lineNo: number }[] {
+  const physical = src.split('\n');
+  const logical: { text: string; lineNo: number }[] = [];
+  let buf: string[] = [];
+  let startLine = 0;
+  let depth = 0;
+  for (let i = 0; i < physical.length; i++) {
+    const raw = physical[i];
+    let code = raw;
+    let inStr: string | null = null;
+    for (let j = 0; j < raw.length; j++) {
+      const c = raw[j];
+      if (inStr) {
+        if (c === inStr) inStr = null;
+        continue;
+      }
+      if (c === '"' || c === "'") {
+        inStr = c;
+        continue;
+      }
+      if (c === '#') {
+        code = raw.slice(0, j); // rest of the physical line is a comment
+        break;
+      }
+      if (c === '(' || c === '[') depth++;
+      else if (c === ')' || c === ']') depth--;
+    }
+    if (buf.length === 0) startLine = i;
+    buf.push(code);
+    if (depth <= 0) {
+      const text = buf.join(' ').trim();
+      if (text) logical.push({ text, lineNo: startLine });
+      buf = [];
+      depth = 0;
+    }
+  }
+  const tail = buf.join(' ').trim();
+  if (tail) logical.push({ text: tail, lineNo: startLine });
+  return logical;
+}
+
 /** Execute a torch-like script and capture its output + resulting tensors. */
 export function runScript(src: string): RunResult {
   const interp = new Interpreter();
-  const lines = src.split('\n');
+  const logical = splitLogicalLines(src);
   try {
     let lastExpr: Value = null;
     let lastWasExpr = false;
-    for (let ln = 0; ln < lines.length; ln++) {
+    for (const { text, lineNo } of logical) {
       try {
-        const { value, isExpr } = interp.runLine(lines[ln]);
+        const { value, isExpr } = interp.runLine(text);
         lastExpr = value;
         lastWasExpr = isExpr;
       } catch (e) {
-        throw new Error(`Line ${ln + 1}: ${(e as Error).message}`);
+        throw new Error(`Line ${lineNo + 1}: ${(e as Error).message}`);
       }
     }
     // REPL-style: echo the final bare expression if it produced a value.

@@ -48,18 +48,19 @@ export default function GradientDescentDemo() {
   const [playing, setPlaying] = useState(false);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Keep the latest values in a ref so the interval/step callback never reads
+  // stale closure state — and so each setState below runs exactly once (the old
+  // nested-updater approach left `w` unchanged and double-ran under StrictMode).
+  const stateRef = useRef({ w, b, lr });
+  stateRef.current = { w, b, lr };
+
   const doStep = () => {
-    setW((cw) => {
-      let nw = cw;
-      setB((cb) => {
-        const r = step(cw, cb, lr);
-        nw = r.w;
-        setLoss(r.loss);
-        setHistory((h) => [...h.slice(-119), r.loss]);
-        return r.b;
-      });
-      return nw;
-    });
+    const { w: cw, b: cb, lr: clr } = stateRef.current;
+    const r = step(cw, cb, clr);
+    setW(r.w);
+    setB(r.b);
+    setLoss(r.loss);
+    setHistory((h) => [...h.slice(-119), r.loss]);
   };
 
   useEffect(() => {
