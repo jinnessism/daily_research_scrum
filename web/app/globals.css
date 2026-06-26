@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light dark;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  background: #0e1116;
+  color: #e6edf3;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Markdown content styling (react-markdown output). */
+.prose-torch h1 {
+  @apply text-3xl font-bold mt-2 mb-4;
+}
+.prose-torch h2 {
+  @apply text-2xl font-semibold mt-8 mb-3 border-b border-white/10 pb-1;
+}
+.prose-torch h3 {
+  @apply text-xl font-semibold mt-6 mb-2;
+}
+.prose-torch p {
+  @apply my-3 leading-7 text-white/80;
+}
+.prose-torch ul {
+  @apply list-disc pl-6 my-3 text-white/80;
+}
+.prose-torch ol {
+  @apply list-decimal pl-6 my-3 text-white/80;
+}
+.prose-torch li {
+  @apply my-1;
+}
+.prose-torch code {
+  @apply bg-white/10 rounded px-1.5 py-0.5 text-[0.9em] font-mono text-torch-light;
+}
+.prose-torch pre {
+  @apply bg-black/40 rounded-lg p-4 overflow-x-auto my-4 text-sm;
+}
+.prose-torch pre code {
+  @apply bg-transparent p-0 text-white/90;
+}
+.prose-torch a {
+  @apply text-torch-light underline underline-offset-2;
+}
+.prose-torch table {
+  @apply w-full my-4 border-collapse text-sm;
+}
+.prose-torch th,
+.prose-torch td {
+  @apply border border-white/10 px-3 py-2 text-left;
+}
+.prose-torch blockquote {
+  @apply border-l-4 border-torch/60 pl-4 my-4 text-white/70 italic;
+}
