@@ -251,6 +251,40 @@ print("loss:", loss)
 print("grad:", pred.grad)`,
     runnable: true,
   },
+
+  // ---- Convolution -----------------------------------------------------
+  {
+    slug: 'conv2d',
+    name: 'torch.conv2d',
+    category: 'Convolution',
+    signature: 'torch.conv2d(input, kernel)',
+    summary: 'Slide a 2-D kernel over a single-channel image (cross-correlation).',
+    body: `Computes a 2-D convolution (cross-correlation) of \`input\` (H, W) with
+\`kernel\` (kh, kw), stride 1 and no padding, giving a \`(H-kh+1, W-kw+1)\` feature
+map. It is autograd-aware, so gradients flow to both the image and the kernel.
+This educational version handles one channel and one kernel; real
+\`torch.nn.Conv2d\` adds batches, channels, padding, and stride.`,
+    example: `import torch
+img = torch.tensor([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+kernel = torch.tensor([[1, 0], [0, -1]])
+print(torch.conv2d(img, kernel))`,
+    runnable: true,
+  },
+  {
+    slug: 'max-pool2d',
+    name: 'torch.max_pool2d',
+    category: 'Convolution',
+    signature: 'torch.max_pool2d(input, size)',
+    summary: 'Downsample by taking the max of each non-overlapping window.',
+    body: `Splits \`input\` (H, W) into non-overlapping \`size×size\` windows
+(stride = size) and keeps each window's maximum, giving a
+\`(⌊H/size⌋, ⌊W/size⌋)\` output. The gradient flows only to the element that was
+the max in each window.`,
+    example: `import torch
+x = torch.tensor([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
+print(torch.max_pool2d(x, 2))`,
+    runnable: true,
+  },
 ];
 
 export function getRef(slug: string): RefEntry | undefined {

@@ -72,6 +72,38 @@ print(h)
     expect(r.output).toContain('tensor([[0., 0.7, 0.]])');
   });
 
+  it('runs a conv2d + relu + max_pool2d pipeline and backprops to the kernel', () => {
+    const r = runScript(`
+import torch
+
+# 6x6 image with a vertical edge (dark left, bright right)
+img = torch.tensor([[0, 0, 0, 9, 9, 9],
+                    [0, 0, 0, 9, 9, 9],
+                    [0, 0, 0, 9, 9, 9],
+                    [0, 0, 0, 9, 9, 9],
+                    [0, 0, 0, 9, 9, 9],
+                    [0, 0, 0, 9, 9, 9]])
+
+kernel = torch.tensor([[-1, 0, 1],
+                       [-1, 0, 1],
+                       [-1, 0, 1]], requires_grad=True)
+
+feat = torch.conv2d(img, kernel).relu()
+pooled = torch.max_pool2d(feat, 2)
+print(pooled)
+
+loss = pooled.sum()
+loss.backward()
+print(kernel.grad)
+`);
+    expect(r.error).toBeNull();
+    expect(r.output).toContain('tensor([[27., 27.], [27., 27.]])');
+    // kernel gradient is a populated 3x3 tensor
+    expect(r.output).toContain('tensor([[');
+    const k = r.tensors.find((t) => t.name === 'kernel');
+    expect(k?.tensor.grad).not.toBeNull();
+  });
+
   it('backpropagates through .T (transpose)', () => {
     const r = runScript(`
 x = torch.tensor([[1.0, 2.0], [3.0, 4.0]], requires_grad=True)

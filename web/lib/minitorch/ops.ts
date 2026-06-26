@@ -214,6 +214,104 @@ export function matmul(a: Tensor, b: Tensor): Tensor {
   return result;
 }
 
+/**
+ * Single-channel 2D convolution — really cross-correlation, exactly as torch's
+ * conv layers compute it. Stride 1, no padding ("valid"). `input` (H,W) and
+ * `kernel` (kh,kw) produce (H-kh+1, W-kw+1). Educational scope: one input channel
+ * and one kernel (no batching / channels / padding / stride).
+ */
+export function conv2d(input: Tensor, kernel: Tensor): Tensor {
+  if (input.ndim !== 2 || kernel.ndim !== 2) {
+    throw new Error('conv2d expects a 2D input and a 2D kernel (single channel)');
+  }
+  const [H, W] = input.shape;
+  const [kh, kw] = kernel.shape;
+  const oh = H - kh + 1;
+  const ow = W - kw + 1;
+  if (oh <= 0 || ow <= 0) {
+    throw new Error(`conv2d kernel [${kh},${kw}] is larger than input [${H},${W}]`);
+  }
+  const out = new Float64Array(oh * ow);
+  for (let i = 0; i < oh; i++) {
+    for (let j = 0; j < ow; j++) {
+      let acc = 0;
+      for (let a = 0; a < kh; a++)
+        for (let b = 0; b < kw; b++)
+          acc += input.data[(i + a) * W + (j + b)] * kernel.data[a * kw + b];
+      out[i * ow + j] = acc;
+    }
+  }
+  const result = new Tensor(out, [oh, ow], input.requires_grad || kernel.requires_grad);
+  result._op = 'conv2d';
+  result._prev = [input, kernel];
+  result._backward = () => {
+    if (!result.grad) return;
+    const gIn = input.requires_grad ? new Float64Array(H * W) : null;
+    const gK = kernel.requires_grad ? new Float64Array(kh * kw) : null;
+    for (let i = 0; i < oh; i++) {
+      for (let j = 0; j < ow; j++) {
+        const go = result.grad[i * ow + j];
+        for (let a = 0; a < kh; a++) {
+          for (let b = 0; b < kw; b++) {
+            if (gIn) gIn[(i + a) * W + (j + b)] += go * kernel.data[a * kw + b];
+            if (gK) gK[a * kw + b] += go * input.data[(i + a) * W + (j + b)];
+          }
+        }
+      }
+    }
+    if (gIn) input.accumGrad(gIn);
+    if (gK) kernel.accumGrad(gK);
+  };
+  return result;
+}
+
+/**
+ * Non-overlapping 2D max pooling (window = stride = `size`), single channel.
+ * `input` (H,W) -> (⌊H/size⌋, ⌊W/size⌋). The gradient flows only to the argmax
+ * of each window.
+ */
+export function maxPool2d(input: Tensor, size: number): Tensor {
+  if (input.ndim !== 2) throw new Error('max_pool2d expects a 2D input');
+  if (!Number.isInteger(size) || size < 1) {
+    throw new Error('max_pool2d size must be a positive integer');
+  }
+  const [H, W] = input.shape;
+  const oh = Math.floor(H / size);
+  const ow = Math.floor(W / size);
+  if (oh < 1 || ow < 1) {
+    throw new Error(`max_pool2d size ${size} is larger than input [${H},${W}]`);
+  }
+  const out = new Float64Array(oh * ow);
+  const argmax = new Int32Array(oh * ow); // flat index into input of each window's max
+  for (let i = 0; i < oh; i++) {
+    for (let j = 0; j < ow; j++) {
+      let best = -Infinity;
+      let bestIdx = -1;
+      for (let a = 0; a < size; a++) {
+        for (let b = 0; b < size; b++) {
+          const idx = (i * size + a) * W + (j * size + b);
+          if (input.data[idx] > best) {
+            best = input.data[idx];
+            bestIdx = idx;
+          }
+        }
+      }
+      out[i * ow + j] = best;
+      argmax[i * ow + j] = bestIdx;
+    }
+  }
+  const result = new Tensor(out, [oh, ow], input.requires_grad);
+  result._op = 'max_pool2d';
+  result._prev = [input];
+  result._backward = () => {
+    if (!result.grad || !input.requires_grad) return;
+    const gIn = new Float64Array(H * W);
+    for (let o = 0; o < oh * ow; o++) gIn[argmax[o]] += result.grad[o];
+    input.accumGrad(gIn);
+  };
+  return result;
+}
+
 /** Mean-squared-error loss between predictions and targets. */
 export function mse_loss(pred: Tensor, target: Tensor): Tensor {
   const diff = sub(pred, target);

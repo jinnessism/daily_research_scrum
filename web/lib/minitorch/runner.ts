@@ -19,6 +19,8 @@ import {
   sum,
   mean,
   powScalar,
+  conv2d,
+  maxPool2d,
 } from './ops';
 
 export interface RunResult {
@@ -259,6 +261,7 @@ interface BoundMethod {
 const TORCH_FNS = new Set([
   'tensor', 'zeros', 'ones', 'randn', 'rand', 'arange', 'full',
   'relu', 'sigmoid', 'tanh', 'exp', 'log', 'matmul', 'sum', 'mean',
+  'conv2d', 'max_pool2d',
 ]);
 
 const TENSOR_METHODS = new Set([
@@ -434,6 +437,8 @@ class Interpreter {
       case 'matmul': return matmul(asTensor(args[0]), asTensor(args[1]));
       case 'sum': return sum(asTensor(args[0]));
       case 'mean': return mean(asTensor(args[0]));
+      case 'conv2d': return conv2d(asTensor(args[0]), asTensor(args[1]));
+      case 'max_pool2d': return maxPool2d(asTensor(args[0]), Number(args[1]));
     }
     throw new Error(`torch.${name} is not supported`);
   }
