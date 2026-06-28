@@ -290,8 +290,10 @@ print("loss after :", loss_after)`,
       },
       {
         type: 'md',
-        content: `Repeat that update in a loop and you have training. Watch it happen continuously
-on the **Visualize → Gradient descent** page.`,
+        content: `Repeat that update in a loop and you have training. Watch a single
+parameter train on the **Visualize → Gradient descent** page, or step the whole
+forward-and-backward pass through a multi-layer net on the **Visualize → Backprop
+(MLP)** page — every activation and gradient shown live.`,
       },
     ],
   },

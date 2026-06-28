@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import AutogradGraphDemo from '@/components/viz/AutogradGraphDemo';
 import GradientDescentDemo from '@/components/viz/GradientDescentDemo';
+import BackpropDemo from '@/components/viz/BackpropDemo';
 import ActivationPlot from '@/components/viz/ActivationPlot';
 import NetworkView from '@/components/viz/NetworkView';
 import ConvDemo from '@/components/viz/ConvDemo';
@@ -10,6 +11,7 @@ import ConvDemo from '@/components/viz/ConvDemo';
 const TABS = [
   { id: 'autograd', label: 'Autograd graph', el: <AutogradGraphDemo /> },
   { id: 'gd', label: 'Gradient descent', el: <GradientDescentDemo /> },
+  { id: 'backprop', label: 'Backprop (MLP)', el: <BackpropDemo /> },
   { id: 'act', label: 'Activations', el: <ActivationPlot /> },
   { id: 'conv', label: 'Convolution', el: <ConvDemo /> },
   { id: 'arch', label: 'Architecture', el: <NetworkView /> },
