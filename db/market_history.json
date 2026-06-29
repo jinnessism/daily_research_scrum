@@ -1,20 +1,5 @@
 [
   {
-    "date": "2026-06-19",
-    "kospi_index": "9,063.84",
-    "kospi_change": "+2.25%",
-    "kosdaq_index": "1,000.93",
-    "kosdaq_change": "-3.01%",
-    "top_searched": [
-      "삼성전자",
-      "SK하이닉스",
-      "삼성전기",
-      "현대차",
-      "한미반도체"
-    ],
-    "top_volume": []
-  },
-  {
     "date": "2026-06-20",
     "kospi_index": "9,052.42",
     "kospi_change": "-0.13%",
@@ -115,5 +100,20 @@
       "KODEX SK하이닉스단일종목레버리지",
       "TIGER 200선물인버스2X"
     ]
+  },
+  {
+    "date": "2026-06-30",
+    "kospi_index": "8,394.65",
+    "kospi_change": "-0.20%",
+    "kosdaq_index": "920.57",
+    "kosdaq_change": "+8.13%",
+    "top_searched": [
+      "삼성전자",
+      "SK하이닉스",
+      "에코프로",
+      "현대차",
+      "삼성전기"
+    ],
+    "top_volume": []
   }
 ]
