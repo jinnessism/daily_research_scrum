@@ -1,20 +1,5 @@
 [
   {
-    "date": "2026-06-23",
-    "kospi_index": "9,114.55",
-    "kospi_change": "+0.69%",
-    "kosdaq_index": "968.40",
-    "kosdaq_change": "+0.19%",
-    "top_searched": [
-      "SK하이닉스",
-      "삼성전자",
-      "LG전자",
-      "SK스퀘어",
-      "현대차"
-    ],
-    "top_volume": []
-  },
-  {
     "date": "2026-06-24",
     "kospi_index": "8,203.84",
     "kospi_change": "-9.99%",
@@ -107,6 +92,21 @@
       "에코프로",
       "에코프로비엠",
       "삼성전기"
+    ],
+    "top_volume": []
+  },
+  {
+    "date": "2026-07-02",
+    "kospi_index": "8,303.41",
+    "kospi_change": "-2.04%",
+    "kosdaq_index": "929.35",
+    "kosdaq_change": "+1.44%",
+    "top_searched": [
+      "삼성전자",
+      "SK하이닉스",
+      "삼성전기",
+      "현대차",
+      "한화오션"
     ],
     "top_volume": []
   }
