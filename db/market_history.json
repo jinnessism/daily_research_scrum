@@ -1,20 +1,5 @@
 [
   {
-    "date": "2026-07-01",
-    "kospi_index": "8,476.48",
-    "kospi_change": "+0.97%",
-    "kosdaq_index": "916.18",
-    "kosdaq_change": "-0.48%",
-    "top_searched": [
-      "삼성전자",
-      "SK하이닉스",
-      "에코프로",
-      "에코프로비엠",
-      "삼성전기"
-    ],
-    "top_volume": []
-  },
-  {
     "date": "2026-07-02",
     "kospi_index": "8,303.41",
     "kospi_change": "-2.04%",
@@ -121,5 +106,20 @@
       "KODEX 코스닥150레버리지",
       "다스코"
     ]
+  },
+  {
+    "date": "2026-07-10",
+    "kospi_index": "7,291.91",
+    "kospi_change": "+0.62%",
+    "kosdaq_index": "794.00",
+    "kosdaq_change": "+1.15%",
+    "top_searched": [
+      "SK하이닉스",
+      "삼성전자",
+      "펩트론",
+      "HLB",
+      "삼성전기"
+    ],
+    "top_volume": []
   }
 ]
