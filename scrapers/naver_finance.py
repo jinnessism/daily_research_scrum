@@ -55,6 +55,54 @@ class KoreanMarketDataAdvanced:
         return result
 
     @classmethod
+    def get_global_market_context(cls) -> Dict[str, Any]:
+        """Best-effort overnight US/FX market context for AI reference.
+
+        Fetches USD/KRW, Nasdaq Composite, S&P 500, and SOX via FinanceDataReader.
+        Each fetch is wrapped independently — any single failure is logged and
+        skipped, never raised. Yahoo/FRED may be unreachable; degrade gracefully.
+
+        Returns a dict keyed by 'usdkrw', 'nasdaq', 'sp500', 'sox', each mapping
+        to {'label', 'value', 'change'} or None when unavailable.
+        """
+        labels = {
+            'usdkrw': 'USD/KRW',
+            'nasdaq': 'Nasdaq Composite',
+            'sp500': 'S&P 500',
+            'sox': 'SOX (Philadelphia Semiconductor)',
+        }
+        context: Dict[str, Any] = {key: None for key in labels}
+
+        if not _HAS_FDR:
+            logger.warning("FinanceDataReader not available — global market context will be empty")
+            return context
+
+        # (key, [tickers to try in order])
+        sources = [
+            ('usdkrw', ['FRED:DEXKOUS', 'USD/KRW']),
+            ('nasdaq', ['IXIC']),
+            ('sp500', ['US500']),
+            ('sox', ['^SOX', 'SOXX']),
+        ]
+
+        for key, tickers in sources:
+            quote = None
+            for ticker in tickers:
+                quote = _fetch_quote_from_fdr(ticker)
+                if quote is not None:
+                    break
+            if quote is not None:
+                context[key] = {'label': labels[key], **quote}
+
+        fetched = [labels[k] for k, v in context.items() if v is not None]
+        if fetched:
+            logger.info(f"Global market context loaded: {', '.join(fetched)}")
+        else:
+            logger.warning("Global market context: no entries fetched")
+
+        return context
+
+    @classmethod
     def get_real_market_data(cls) -> Dict[str, Any]:
         market_data: Dict[str, Any] = {
             'kospi': {'index': 'N/A', 'change': 'N/A'},
@@ -103,22 +151,41 @@ class KoreanMarketDataAdvanced:
         return market_data
 
 
-def _fill_index_from_fdr(market_data: Dict[str, Any]) -> None:
-    """Fetch previous trading day's KOSPI/KOSDAQ close + change from FinanceDataReader."""
+def _fetch_quote_from_fdr(ticker: str):
+    """Fetch the last 2 closes for a ticker via FinanceDataReader and compute % change.
+
+    Returns {'value': <latest close>, 'change': '<sign><pct>%'} or None on any
+    failure (unreachable source, too few rows, etc.) — never raises.
+    """
     try:
         start = (datetime.now() - timedelta(days=10)).strftime('%Y-%m-%d')
         today = datetime.now().strftime('%Y-%m-%d')
+        df = fdr.DataReader(ticker, start, today)
+        if len(df) < 2:
+            return None
+        last = df.iloc[-1]
+        prev = df.iloc[-2]
+        change_pct = (float(last['Close']) - float(prev['Close'])) / float(prev['Close']) * 100
+        sign = '+' if change_pct >= 0 else ''
+        return {
+            'value': f"{last['Close']:,.2f}",
+            'change': f"{sign}{change_pct:.2f}%"
+        }
+    except Exception as e:
+        logger.warning(f"FinanceDataReader fetch failed for {ticker}: {e}")
+        return None
+
+
+def _fill_index_from_fdr(market_data: Dict[str, Any]) -> None:
+    """Fetch previous trading day's KOSPI/KOSDAQ close + change from FinanceDataReader."""
+    try:
         for ticker, key in [('KS11', 'kospi'), ('KQ11', 'kosdaq')]:
-            df = fdr.DataReader(ticker, start, today)
-            if len(df) < 2:
+            quote = _fetch_quote_from_fdr(ticker)
+            if quote is None:
                 continue
-            last = df.iloc[-1]
-            prev = df.iloc[-2]
-            change_pct = (float(last['Close']) - float(prev['Close'])) / float(prev['Close']) * 100
-            sign = '+' if change_pct >= 0 else ''
             market_data[key] = {
-                'index': f"{last['Close']:,.2f}",
-                'change': f"{sign}{change_pct:.2f}%"
+                'index': quote['value'],
+                'change': quote['change']
             }
         logger.info("Index data loaded from FinanceDataReader")
     except Exception as e:

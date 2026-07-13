@@ -22,9 +22,23 @@ class MarketReasoningAgent:
         return text
 
     @staticmethod
-    def generate_reasoning(market_data: Dict, history: List[Dict] = []) -> str:
+    def generate_reasoning(market_data: Dict, history: List[Dict] = [], global_context: Dict = None) -> str:
         today_date = datetime.now().strftime('%Y-%m-%d')
         yesterday_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+
+        global_block = ""
+        if global_context and any(v is not None for v in global_context.values()):
+            lines = [
+                f"- {v['label']}: {v['value']} ({v['change']})"
+                for v in global_context.values() if v is not None
+            ]
+            global_block = (
+                "\n\n*참고: 간밤 글로벌 시장 / 환율 (Overnight Global Markets & FX):*\n"
+                + "\n".join(lines)
+                + "\nUse this as reference context to judge whether Korea's move was driven "
+                "by overnight global/semiconductor sentiment (Nasdaq/SOX) and FX (USD/KRW), "
+                "vs domestic factors."
+            )
 
         history_block = ""
         if history:
@@ -55,7 +69,7 @@ class MarketReasoningAgent:
         prompt = (
             f"Here is the KOSPI/KOSDAQ index data and the most-searched/highest-volume stocks "
             f"from the Korean market for the most recent trading day (yesterday, {yesterday_date}):\n"
-            f"{market_data}{history_block}\n\n"
+            f"{market_data}{history_block}{global_block}\n\n"
             f"Today is {today_date}. Provide a *micro-level daily analysis* of yesterday's market "
             f"({yesterday_date}). Focus strictly on what happened that specific day:\n\n"
             f"1. *Per-stock catalyst*: For each trending or high-volume stock, identify the specific "
