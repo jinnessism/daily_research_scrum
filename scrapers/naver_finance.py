@@ -37,6 +37,11 @@ class KoreanMarketDataAdvanced:
         SECTOR_STOCKS = {}
         WATCHLIST = []
 
+    _env_wl = os.environ.get('WATCHLIST_KR', '')
+    if _env_wl:
+        WATCHLIST = [s.strip() for s in _env_wl.split(',') if s.strip()]
+    del _env_wl
+
     @classmethod
     def _classify_trending_stocks(cls, stock_names: List[str]) -> Dict[str, Any]:
         result: Dict[str, Any] = {'sectors': {}, 'watchlist_hits': []}

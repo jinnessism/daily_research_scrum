@@ -41,6 +41,8 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          WATCHLIST_KR: ${{ secrets.WATCHLIST_KR }}
+          WATCHLIST_US: ${{ secrets.WATCHLIST_US }}
         run: |
           python main.py
 

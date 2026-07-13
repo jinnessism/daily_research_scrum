@@ -45,6 +45,13 @@ class MarketReasoningAgent:
             if watchlist_hits else ""
         )
 
+        us_watchlist = [s.strip() for s in os.environ.get('WATCHLIST_US', '').split(',') if s.strip()]
+        us_note = (
+            f"\n- *US holdings to monitor*: {', '.join(us_watchlist)} — after the KR analysis, add a brief "
+            f"paragraph on any relevant overnight moves, macro signals, or sector catalysts for each."
+            if us_watchlist else ""
+        )
+
         prompt = (
             f"Here is the KOSPI/KOSDAQ index data and the most-searched/highest-volume stocks "
             f"from the Korean market for the most recent trading day (yesterday, {yesterday_date}):\n"
@@ -61,7 +68,7 @@ class MarketReasoningAgent:
             f"STRICT RULES:\n"
             f"- Minimize references to long-term macro trends. Mention them at most once as brief background.\n"
             f"- Every claim must be tied to a specific stock or same-day event.\n"
-            f"- Keep total response under 400 words.{watchlist_note}\n"
+            f"- Keep total response under 450 words.{watchlist_note}{us_note}\n"
             f"CRITICAL: Use Slack mrkdwn (*bold*, _italic_). Do NOT use markdown headers (###, ##)."
         )
 
