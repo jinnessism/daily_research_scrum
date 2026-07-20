@@ -1,20 +1,5 @@
 [
   {
-    "date": "2026-07-10",
-    "kospi_index": "7,291.91",
-    "kospi_change": "+0.62%",
-    "kosdaq_index": "794.00",
-    "kosdaq_change": "+1.15%",
-    "top_searched": [
-      "SK하이닉스",
-      "삼성전자",
-      "펩트론",
-      "HLB",
-      "삼성전기"
-    ],
-    "top_volume": []
-  },
-  {
     "date": "2026-07-11",
     "kospi_index": "7,475.94",
     "kospi_change": "+2.52%",
@@ -121,5 +106,20 @@
       "KODEX SK하이닉스단일종목레버리지",
       "TIGER SK하이닉스단일종목레버리지"
     ]
+  },
+  {
+    "date": "2026-07-21",
+    "kospi_index": "6,516.27",
+    "kospi_change": "-4.46%",
+    "kosdaq_index": "749.64",
+    "kosdaq_change": "-5.33%",
+    "top_searched": [
+      "SK하이닉스",
+      "삼성전자",
+      "코오롱티슈진",
+      "현대차",
+      "삼성전기"
+    ],
+    "top_volume": []
   }
 ]
