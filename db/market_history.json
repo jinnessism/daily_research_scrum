@@ -1,20 +1,5 @@
 [
   {
-    "date": "2026-07-16",
-    "kospi_index": "7,284.41",
-    "kospi_change": "+6.24%",
-    "kosdaq_index": "829.43",
-    "kosdaq_change": "+5.80%",
-    "top_searched": [
-      "SK하이닉스",
-      "삼성전자",
-      "한화오션",
-      "한미반도체",
-      "HLB"
-    ],
-    "top_volume": []
-  },
-  {
     "date": "2026-07-17",
     "kospi_index": "6,820.60",
     "kospi_change": "-6.37%",
@@ -115,5 +100,26 @@
       "코오롱티슈진"
     ],
     "top_volume": []
+  },
+  {
+    "date": "2026-07-25",
+    "kospi_index": "6,690.62",
+    "kospi_change": "-5.72%",
+    "kosdaq_index": "748.22",
+    "kosdaq_change": "-5.32%",
+    "top_searched": [
+      "삼성전자",
+      "SK하이닉스",
+      "코오롱티슈진",
+      "NAVER",
+      "현대차"
+    ],
+    "top_volume": [
+      "KODEX 200선물인버스2X",
+      "KODEX 인버스",
+      "SOL SK하이닉스선물단일종목인버스2X",
+      "KODEX SK하이닉스단일종목레버리지",
+      "TIGER SK하이닉스단일종목레버리지"
+    ]
   }
 ]
