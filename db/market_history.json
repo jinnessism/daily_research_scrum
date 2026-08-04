@@ -1,26 +1,5 @@
 [
   {
-    "date": "2026-07-25",
-    "kospi_index": "6,690.62",
-    "kospi_change": "-5.72%",
-    "kosdaq_index": "748.22",
-    "kosdaq_change": "-5.32%",
-    "top_searched": [
-      "삼성전자",
-      "SK하이닉스",
-      "코오롱티슈진",
-      "NAVER",
-      "현대차"
-    ],
-    "top_volume": [
-      "KODEX 200선물인버스2X",
-      "KODEX 인버스",
-      "SOL SK하이닉스선물단일종목인버스2X",
-      "KODEX SK하이닉스단일종목레버리지",
-      "TIGER SK하이닉스단일종목레버리지"
-    ]
-  },
-  {
     "date": "2026-07-28",
     "kospi_index": "6,755.75",
     "kospi_change": "+0.97%",
@@ -115,5 +94,20 @@
       "KODEX 2차전지산업레버리지",
       "TIGER 200선물인버스2X"
     ]
+  },
+  {
+    "date": "2026-08-05",
+    "kospi_index": "6,358.95",
+    "kospi_change": "+1.62%",
+    "kosdaq_index": "780.72",
+    "kosdaq_change": "+5.88%",
+    "top_searched": [
+      "삼성전자",
+      "SK하이닉스",
+      "NAVER",
+      "삼성전기",
+      "알테오젠"
+    ],
+    "top_volume": []
   }
 ]
