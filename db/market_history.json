@@ -1,20 +1,5 @@
 [
   {
-    "date": "2026-07-29",
-    "kospi_index": "6,023.66",
-    "kospi_change": "-10.84%",
-    "kosdaq_index": "705.85",
-    "kosdaq_change": "-7.72%",
-    "top_searched": [
-      "SK하이닉스",
-      "삼성전자",
-      "NAVER",
-      "삼성전기",
-      "현대차"
-    ],
-    "top_volume": []
-  },
-  {
     "date": "2026-07-30",
     "kospi_index": "5,663.24",
     "kospi_change": "-5.98%",
@@ -109,5 +94,26 @@
       "두산에너빌리.."
     ],
     "top_volume": []
+  },
+  {
+    "date": "2026-08-07",
+    "kospi_index": "6,296.38",
+    "kospi_change": "-4.58%",
+    "kosdaq_index": "801.67",
+    "kosdaq_change": "+0.26%",
+    "top_searched": [
+      "SK하이닉스",
+      "삼성전자",
+      "삼성전기",
+      "LG전자",
+      "NAVER"
+    ],
+    "top_volume": [
+      "KODEX 200선물인버스2X",
+      "KODEX 인버스",
+      "KODEX 2차전지산업레버리지",
+      "KODEX 코스닥150레버리지",
+      "TIGER 200선물인버스2X"
+    ]
   }
 ]
