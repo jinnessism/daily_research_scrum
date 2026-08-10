@@ -1,20 +1,5 @@
 [
   {
-    "date": "2026-07-31",
-    "kospi_index": "5,593.56",
-    "kospi_change": "-1.23%",
-    "kosdaq_index": "644.78",
-    "kosdaq_change": "-2.70%",
-    "top_searched": [
-      "SK하이닉스",
-      "삼성전자",
-      "삼성전기",
-      "현대차",
-      "NAVER"
-    ],
-    "top_volume": []
-  },
-  {
     "date": "2026-08-01",
     "kospi_index": "6,595.45",
     "kospi_change": "+17.91%",
@@ -127,5 +112,20 @@
       "KODEX 코스닥150레버리지",
       "KODEX 2차전지산업레버리지"
     ]
+  },
+  {
+    "date": "2026-08-11",
+    "kospi_index": "6,299.66",
+    "kospi_change": "+0.65%",
+    "kosdaq_index": "854.47",
+    "kosdaq_change": "+6.97%",
+    "top_searched": [
+      "삼성전자",
+      "SK하이닉스",
+      "알테오젠",
+      "대한광통신",
+      "NAVER"
+    ],
+    "top_volume": []
   }
 ]
