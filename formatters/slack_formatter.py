@@ -104,6 +104,70 @@ class AdvancedSlackFormatter:
         ]
 
     @staticmethod
+    def create_macro_blocks(macro_data: Dict) -> List[Dict]:
+        """Render Macro 4 Key Indicators (Base rates, Bond yields, FX, Equities) and Daily News."""
+        if not macro_data:
+            return []
+
+        indicators = macro_data.get('indicators', {})
+        news = macro_data.get('news', [])
+
+        blocks: List[Dict[str, Any]] = [
+            {"type": "divider"},
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": "🏛️ 거시경제 4대 지표 (금리 · 채권 · 환율 · 증시)",
+                    "emoji": True
+                }
+            }
+        ]
+
+        # 1. Indicator breakdown
+        us10y = indicators.get('us10y') or {}
+        us2y = indicators.get('us2y') or {}
+        kr3y = indicators.get('kr3y') or {}
+        usdkrw = indicators.get('usdkrw') or {}
+        usdx = indicators.get('usdx') or {}
+        fed_rate = indicators.get('fed_rate') or {}
+        bok_rate = indicators.get('bok_rate') or {}
+
+        ind_text = (
+            f"🏦 *기준금리*: 미 연준 {fed_rate.get('value', 'N/A')} | 한국은행 {bok_rate.get('value', 'N/A')}\n"
+            f"📉 *채권금리*: US 10Y `{us10y.get('value', 'N/A')}` ({us10y.get('change', '')}) | "
+            f"US 2Y `{us2y.get('value', 'N/A')}` | "
+            f"KR 3Y 국채 `{kr3y.get('value', 'N/A')}` ({kr3y.get('change', '')})\n"
+            f"💱 *환율*: USD/KRW `{usdkrw.get('value', 'N/A')}` ({usdkrw.get('change', '')}) | "
+            f"달러인덱스 `{usdx.get('value', 'N/A')}` ({usdx.get('change', '')})"
+        )
+        blocks.append({
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": ind_text}
+        })
+
+        # 2. Macro News Section
+        if news:
+            news_lines = []
+            for item in news[:6]:
+                category = item.get('category', '뉴스')
+                title = item.get('title', '')
+                link = item.get('link', '#')
+                source = item.get('source', '')
+                pub = item.get('published', '')
+                news_lines.append(f"• *[{category}]* <{link}|{title}> _({source} | {pub})_")
+
+            blocks.append({
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "*📰 거시경제 매일 트래킹 뉴스*\n" + "\n".join(news_lines)
+                }
+            })
+
+        return blocks
+
+    @staticmethod
     def create_paper_blocks(papers_dict: Dict[str, List[Dict]]) -> List[Dict]:
         blocks: List[Dict[str, Any]] = [
             {"type": "divider"},
@@ -151,14 +215,15 @@ class AdvancedSlackFormatter:
         market_data: Dict,
         papers_dict: Dict[str, List[Dict]],
         ai_reasoning: str = "",
-        global_context: Dict = None
+        global_context: Dict = None,
+        macro_data: Dict = None
     ) -> str:
         blocks: List[Dict[str, Any]] = [
             {
                 "type": "header",
                 "text": {
                     "type": "plain_text",
-                    "text": f"🌅 {datetime.now().strftime('%H:%M')} - Morning Market & Research Briefing",
+                    "text": f"🌅 {datetime.now().strftime('%H:%M')} - Daily Market, Macro & Research Briefing",
                     "emoji": True
                 }
             }
@@ -168,13 +233,16 @@ class AdvancedSlackFormatter:
 
         blocks.extend(AdvancedSlackFormatter.create_global_blocks(global_context))
 
+        if macro_data:
+            blocks.extend(AdvancedSlackFormatter.create_macro_blocks(macro_data))
+
         if ai_reasoning:
             blocks.append({"type": "divider"})
             blocks.append({
                 "type": "header",
                 "text": {
                     "type": "plain_text",
-                    "text": "🧠 AI Market Analysis",
+                    "text": "🧠 AI Macro & Market Analysis",
                     "emoji": True
                 }
             })

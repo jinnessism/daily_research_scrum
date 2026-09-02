@@ -66,6 +66,7 @@ class KoreanMarketDataAdvanced:
         to {'label', 'value', 'change'} or None when unavailable.
         """
         labels = {
+            'us10y': 'US 10Y Bond Yield',
             'usdkrw': 'USD/KRW',
             'nasdaq': 'Nasdaq Composite',
             'sp500': 'S&P 500',
@@ -79,6 +80,7 @@ class KoreanMarketDataAdvanced:
 
         # (key, [tickers to try in order])
         sources = [
+            ('us10y', ['FRED:DGS10']),
             ('usdkrw', ['FRED:DEXKOUS', 'USD/KRW']),
             ('nasdaq', ['IXIC']),
             ('sp500', ['US500']),
@@ -163,12 +165,16 @@ def _fetch_quote_from_fdr(ticker: str):
         df = fdr.DataReader(ticker, start, today)
         if len(df) < 2:
             return None
-        last = df.iloc[-1]
-        prev = df.iloc[-2]
-        change_pct = (float(last['Close']) - float(prev['Close'])) / float(prev['Close']) * 100
+        col = 'Close' if 'Close' in df.columns else df.columns[0]
+        last_val = float(df.iloc[-1][col])
+        prev_val = float(df.iloc[-2][col])
+        if prev_val == 0:
+            return None
+        change_pct = (last_val - prev_val) / prev_val * 100
         sign = '+' if change_pct >= 0 else ''
+        unit = "%" if ticker.startswith('FRED:DGS') else ""
         return {
-            'value': f"{last['Close']:,.2f}",
+            'value': f"{last_val:,.2f}{unit}",
             'change': f"{sign}{change_pct:.2f}%"
         }
     except Exception as e:

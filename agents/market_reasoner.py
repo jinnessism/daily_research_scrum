@@ -22,7 +22,12 @@ class MarketReasoningAgent:
         return text
 
     @staticmethod
-    def generate_reasoning(market_data: Dict, history: List[Dict] = [], global_context: Dict = None) -> str:
+    def generate_reasoning(
+        market_data: Dict,
+        history: List[Dict] = [],
+        global_context: Dict = None,
+        macro_data: Dict = None
+    ) -> str:
         today_date = datetime.now().strftime('%Y-%m-%d')
         yesterday_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
 
@@ -35,9 +40,24 @@ class MarketReasoningAgent:
             global_block = (
                 "\n\n*참고: 간밤 글로벌 시장 / 환율 (Overnight Global Markets & FX):*\n"
                 + "\n".join(lines)
-                + "\nUse this as reference context to judge whether Korea's move was driven "
-                "by overnight global/semiconductor sentiment (Nasdaq/SOX) and FX (USD/KRW), "
-                "vs domestic factors."
+            )
+
+        macro_block = ""
+        if macro_data:
+            indicators = macro_data.get('indicators', {})
+            news_items = macro_data.get('news', [])
+            ind_lines = [
+                f"- {v['label']}: {v['value']} ({v.get('change', '')})"
+                for v in indicators.values() if v is not None
+            ]
+            news_lines = [
+                f"- [{n.get('category', '뉴스')}] {n.get('title', '')} ({n.get('source', '')})"
+                for n in news_items[:6]
+            ]
+            macro_block = (
+                "\n\n*🏛️ 거시경제 4대 지표 및 당일 주요 뉴스 (Base Rates, Bond Yields, FX, Stocks & News):*\n"
+                + "*주요 지표:* \n" + "\n".join(ind_lines)
+                + "\n\n*당일 거시경제 주요 뉴스:* \n" + "\n".join(news_lines)
             )
 
         history_block = ""
@@ -49,7 +69,7 @@ class MarketReasoningAgent:
                 for h in history[-3:]
             ]
             history_block = (
-                "\n\n*3-Day History (for trend context only — do not dwell on it):*\n"
+                "\n\n*3-Day History:*\n"
                 + "\n".join(lines)
             )
 
@@ -61,28 +81,21 @@ class MarketReasoningAgent:
 
         us_watchlist = [s.strip() for s in os.environ.get('WATCHLIST_US', '').split(',') if s.strip()]
         us_note = (
-            f"\n- *US holdings to monitor*: {', '.join(us_watchlist)} — after the KR analysis, add a brief "
-            f"paragraph on any relevant overnight moves, macro signals, or sector catalysts for each."
+            f"\n- *US holdings to monitor*: {', '.join(us_watchlist)} — add a brief paragraph on any relevant overnight moves."
             if us_watchlist else ""
         )
 
         prompt = (
-            f"Here is the KOSPI/KOSDAQ index data and the most-searched/highest-volume stocks "
-            f"from the Korean market for the most recent trading day (yesterday, {yesterday_date}):\n"
-            f"{market_data}{history_block}{global_block}\n\n"
-            f"Today is {today_date}. Provide a *micro-level daily analysis* of yesterday's market "
-            f"({yesterday_date}). Focus strictly on what happened that specific day:\n\n"
-            f"1. *Per-stock catalyst*: For each trending or high-volume stock, identify the specific "
-            f"news event, announcement, or intraday trigger (e.g. earnings surprise, analyst upgrade, "
-            f"regulatory decision, short squeeze) that likely drove its appearance that day.\n\n"
-            f"2. *Index movement*: Explain the KOSPI/KOSDAQ change using specific same-day catalysts "
-            f"(BOK statement, foreign institutional flows, options expiry, earnings release, sector rotation).\n\n"
-            f"3. *Notable patterns*: Highlight unusual volume spikes, late-session reversals, or "
-            f"cross-sector correlations visible in yesterday's data.\n\n"
+            f"Here is the market data, macro 4 indicators (기준금리, 채권금리, 환율, 주가), and latest macro news:\n"
+            f"{market_data}{history_block}{global_block}{macro_block}\n\n"
+            f"Today is {today_date}. Provide a concise analysis (in Korean) explaining today's/yesterday's ({yesterday_date}) market dynamics:\n\n"
+            f"1. *거시경제 톱니바퀴 연동 분석 (Macro Gear Interaction)*: Explain how **기준금리 (Interest Rates) ➡️ 채권금리 (Bond Yields) ➡️ 환율 (FX USD/KRW) ➡️ 주가 (Equities)** "
+            f"interacted based on today's indicators and macro news. Highlight any investor sentiment on bond bargain hunting (채권 저가 매수 심리: 고금리 확정 이자 + 향후 금리 인하 시 시세차익) or risk-off sentiment.\n\n"
+            f"2. *주요 종목 촉매 (Per-stock Catalysts)*: Identify intraday triggers for trending/high-volume stocks.\n\n"
+            f"3. *지수 및 수급 동향 (Index & Market Movement)*: Briefly summarize KOSPI/KOSDAQ and FX impacts.\n\n"
             f"STRICT RULES:\n"
-            f"- Minimize references to long-term macro trends. Mention them at most once as brief background.\n"
-            f"- Every claim must be tied to a specific stock or same-day event.\n"
-            f"- Keep total response under 450 words.{watchlist_note}{us_note}\n"
+            f"- Write clearly in Korean.\n"
+            f"- Keep total response under 500 words.{watchlist_note}{us_note}\n"
             f"CRITICAL: Use Slack mrkdwn (*bold*, _italic_). Do NOT use markdown headers (###, ##)."
         )
 

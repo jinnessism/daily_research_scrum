@@ -4,10 +4,12 @@
 
 ## 기능
 
-- **시장 분석**: KOSPI/KOSDAQ 지수 및 인기/거래량 상위 종목 크롤링 (Naver Finance)
-- **AI 분석**: 당일 종목별 구체적인 촉매 분석 (Claude / Gemini / OpenAI 순으로 fallback)
+- **거시경제 4대 지표 트래킹**: 기준금리 (미 연준, 한국은행), 채권금리 (미국 10년/2년 국채, 한국 3년 국고채/회사채), 환율 (USD/KRW, 달러 인덱스), 증시 지수 실시간 추적
+- **거시경제 매일 뉴스 수집**: 기준금리, 채권, 환율, 주가 관련 주요 뉴스 매일 자동 수집 & 브리핑 (RSS 자동 수집)
+- **시장 & AI 연동 분석**: 거시경제 4대 축 톱니바퀴 연동 (금리 ➡️ 채권 ➡️ 환율 ➡️ 증시) 및 채권 저가 매수 심리 반영 AI 시장 동향 해석 (Claude / Gemini / OpenAI 순으로 fallback)
+- **주식 시장 분석**: KOSPI/KOSDAQ 지수 및 인기/거래량 상위 종목 크롤링 (Naver Finance)
 - **논문 수집**: arXiv에서 설정된 토픽의 최신 논문 수집
-- **Slack 발송**: GitHub Actions를 통해 매일 자동 실행
+- **Slack 발송**: GitHub Actions를 통해 매일 자동 실행 (매일 아침 08:00 KST)
 
 ## 설정 파일
 
@@ -52,7 +54,7 @@ AI 분석은 위 순서대로 사용 가능한 키를 시도합니다. 키가 �
 
 ```bash
 pip install -r requirements.txt
-SLACK_WEBHOOK_URL=... ANTHROPIC_API_KEY=... python market_research_bot_advanced.py
+SLACK_WEBHOOK_URL=... ANTHROPIC_API_KEY=... python main.py
 ```
 
 ## GitHub Actions

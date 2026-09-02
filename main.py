@@ -12,17 +12,27 @@ from datetime import datetime
 from typing import Dict, List
 
 from scrapers.naver_finance import KoreanMarketDataAdvanced
+from scrapers.macro_news import MacroNewsCollector
 from scrapers.arxiv_api import AdvancedArxivCollector
 from agents.market_reasoner import MarketReasoningAgent
 from formatters.slack_formatter import AdvancedSlackFormatter
+
+import sys
+
+stream_handler = logging.StreamHandler(sys.stdout)
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
 
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S',
     handlers=[
-        logging.FileHandler('market_bot.log'),
-        logging.StreamHandler()
+        logging.FileHandler('market_bot.log', encoding='utf-8'),
+        stream_handler
     ]
 )
 logger = logging.getLogger(__name__)
@@ -77,13 +87,22 @@ def main():
     market_data = KoreanMarketDataAdvanced.get_real_market_data()
     save_history(history, market_data)
 
-    # 2b. Collect overnight global / FX context (best-effort reference research)
+    # 2b. Collect overnight global / FX context
     logger.info("🌐 Collecting overnight global market context...")
     global_context = None
     try:
         global_context = KoreanMarketDataAdvanced.get_global_market_context()
     except Exception as e:
         logger.warning(f"Global market context collection failed: {e}")
+
+    # 2c. Collect Macro 4 Key Indicators & Daily Macro News (기준금리, 채권금리, 환율, 주가 & 뉴스)
+    logger.info("🏛️ Collecting macro 4 indicators & daily news...")
+    macro_data = None
+    try:
+        macro_data = MacroNewsCollector.get_all_macro_data()
+        logger.info(f"📰 {len(macro_data.get('news', []))} macro news items collected")
+    except Exception as e:
+        logger.warning(f"Macro news collection failed: {e}")
 
     # 3. Collect arXiv papers (duplicate-filtered)
     logger.info("📚 Collecting arXiv papers...")
@@ -94,8 +113,10 @@ def main():
     # 4. AI Reasoning (Tue–Sat only)
     ai_reasoning = ""
     if datetime.now().weekday() in (1, 2, 3, 4, 5):
-        logger.info("🧠 Generating AI market reasoning...")
-        ai_reasoning = MarketReasoningAgent.generate_reasoning(market_data, history, global_context)
+        logger.info("🧠 Generating AI market & macro reasoning...")
+        ai_reasoning = MarketReasoningAgent.generate_reasoning(
+            market_data, history, global_context, macro_data
+        )
         if not ai_reasoning:
             has_key = any(
                 os.environ.get(k)
@@ -108,7 +129,9 @@ def main():
 
     # 5. Build Slack payload
     logger.info("✍️ Generating Slack payload...")
-    payload = AdvancedSlackFormatter.create_full_payload(market_data, papers_dict, ai_reasoning, global_context)
+    payload = AdvancedSlackFormatter.create_full_payload(
+        market_data, papers_dict, ai_reasoning, global_context, macro_data
+    )
 
     payload_json = json.loads(payload)
     logger.info(f"📤 {len(payload_json['blocks'])} blocks generated")
