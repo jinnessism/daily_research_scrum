@@ -109,23 +109,23 @@
   },
   {
     "date": "2026-09-02",
-    "kospi_index": "6,835.80",
-    "kospi_change": "+0.23%",
-    "kosdaq_index": "821.25",
-    "kosdaq_change": "-1.56%",
+    "kospi_index": "6,562.72",
+    "kospi_change": "-3.99%",
+    "kosdaq_index": "803.98",
+    "kosdaq_change": "-2.10%",
     "top_searched": [
       "삼성전자",
       "SK하이닉스",
+      "현대차",
       "삼성전기",
-      "두산에너빌리..",
-      "삼성SDI"
+      "두산에너빌리.."
     ],
     "top_volume": [
       "KODEX 200선물인버스2X",
       "KODEX 인버스",
-      "SOL SK하이닉스선물단일종목인버스2X",
-      "KODEX SK하이닉스단일종목레버리지",
-      "TIGER 미국S&P500"
+      "TIGER 200선물인버스2X",
+      "KODEX 2차전지산업레버리지",
+      "KODEX 코스닥150레버리지"
     ]
   }
 ]
