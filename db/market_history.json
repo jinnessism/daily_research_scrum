@@ -115,17 +115,23 @@
   },
   {
     "date": "2026-09-04",
-    "kospi_index": "6,579.48",
-    "kospi_change": "+0.26%",
-    "kosdaq_index": "790.21",
-    "kosdaq_change": "-1.71%",
+    "kospi_index": "6,687.21",
+    "kospi_change": "+1.64%",
+    "kosdaq_index": "813.50",
+    "kosdaq_change": "+2.95%",
     "top_searched": [
       "삼성전자",
       "SK하이닉스",
       "삼성전기",
-      "알테오젠",
-      "두산에너빌리.."
+      "스카이랩스",
+      "현대차"
     ],
-    "top_volume": []
+    "top_volume": [
+      "KODEX 200선물인버스2X",
+      "KODEX 인버스",
+      "스카이랩스",
+      "KODEX 코스닥150레버리지",
+      "TIGER 200선물인버스2X"
+    ]
   }
 ]
