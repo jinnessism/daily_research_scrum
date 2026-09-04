@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 class MacroNewsCollector:
 
     @staticmethod
-    def _parse_naver_exday(text: str) -> str:
+    def _parse_naver_exday(text: str, is_yield: bool = False) -> str:
         """Clean and format Naver Finance price change strings into clean arrow format."""
         if not text:
             return ""
@@ -59,10 +59,11 @@ class MacroNewsCollector:
             sign = ''
             arrow = ''
 
+        p_unit = "%p" if is_yield else ""
         if num_val and pct_val:
-            return f"{arrow} {sign}{num_val}%p ({pct_val}%)"
+            return f"{arrow} {sign}{num_val}{p_unit} ({pct_val}%)"
         elif num_val:
-            return f"{arrow} {sign}{num_val}%p"
+            return f"{arrow} {sign}{num_val}{p_unit}"
         return text
 
     @classmethod
@@ -111,17 +112,16 @@ class MacroNewsCollector:
                 except Exception as e:
                     logger.warning(f"FDR fetch failed for {ticker}: {e}")
 
-        # 2. KR Bond Yields & Dollar Index via Naver Finance
+        # 2. KR Bond Yields, USD/KRW & Dollar Index via Naver Finance
         naver_codes = [
-            ('IRR_GOVT03Y', 'kr3y', 'KR 3Y Govt Bond Yield'),
-            ('IRR_CORP03Y', 'kr10y', 'KR 3Y Corporate Bond Yield'),
-            ('FX_USDX', 'usdx', 'Dollar Index (USDX)'),
+            ('IRR_GOVT03Y', 'interestDetail.naver', 'kr3y', 'KR 3Y Govt Bond Yield'),
+            ('IRR_CORP03Y', 'interestDetail.naver', 'kr10y', 'KR 3Y Corporate Bond Yield'),
+            ('FX_USDKRW', 'exchangeDetail.naver', 'usdkrw', 'USD/KRW FX Rate'),
+            ('FX_USDX', 'worldExchangeDetail.naver', 'usdx', 'Dollar Index (USDX)'),
         ]
-        for cd, key, label in naver_codes:
+        for cd, path, key, label in naver_codes:
             try:
-                url = f"https://finance.naver.com/marketindex/interestDetail.naver?marketindexCd={cd}"
-                if key == 'usdx':
-                    url = f"https://finance.naver.com/marketindex/worldExchangeDetail.naver?marketindexCd={cd}"
+                url = f"https://finance.naver.com/marketindex/{path}?marketindexCd={cd}"
                 res = requests.get(url, timeout=5)
                 res.encoding = 'euc-kr'
                 soup = BeautifulSoup(res.text, 'html.parser')
@@ -129,9 +129,10 @@ class MacroNewsCollector:
                 val_el = soup.select_one('p.no_today')
                 exday_el = soup.select_one('p.no_exday')
                 if val_el and exday_el:
-                    val = val_el.text.strip().replace('\n', '').replace('%', '')
-                    exday = cls._parse_naver_exday(exday_el.text)
-                    unit = "%" if "Yield" in label or "Bond" in label else ""
+                    val = val_el.text.strip().replace('\n', '').replace('원', '').replace('%', '')
+                    is_yield = "Yield" in label or "Bond" in label
+                    exday = cls._parse_naver_exday(exday_el.text, is_yield=is_yield)
+                    unit = "%" if is_yield else ""
                     indicators[key] = {
                         'label': label,
                         'value': f"{val}{unit}",

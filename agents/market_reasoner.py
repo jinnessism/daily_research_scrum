@@ -86,17 +86,26 @@ class MarketReasoningAgent:
         )
 
         prompt = (
-            f"Here is the market data, macro 4 indicators (기준금리, 채권금리, 환율, 주가), and latest macro news:\n"
+            f"Here is the daily market data, macro 4 indicators (기준금리, 채권금리, 환율, 주가), and latest macro news:\n"
             f"{market_data}{history_block}{global_block}{macro_block}\n\n"
-            f"Today is {today_date}. Provide a concise analysis (in Korean) explaining today's/yesterday's ({yesterday_date}) market dynamics:\n\n"
-            f"1. *거시경제 톱니바퀴 연동 분석 (Macro Gear Interaction)*: Explain how **기준금리 (Interest Rates) ➡️ 채권금리 (Bond Yields) ➡️ 환율 (FX USD/KRW) ➡️ 주가 (Equities)** "
-            f"interacted based on today's indicators and macro news. Highlight any investor sentiment on bond bargain hunting (채권 저가 매수 심리: 고금리 확정 이자 + 향후 금리 인하 시 시세차익) or risk-off sentiment.\n\n"
-            f"2. *주요 종목 촉매 (Per-stock Catalysts)*: Identify intraday triggers for trending/high-volume stocks.\n\n"
-            f"3. *지수 및 수급 동향 (Index & Market Movement)*: Briefly summarize KOSPI/KOSDAQ and FX impacts.\n\n"
+            f"Today is {today_date}. Generate a structured Korean macroeconomic & market briefing report for today/yesterday ({yesterday_date}).\n\n"
+            f"REQUIRED FORMAT (Follow this exact structure in Slack mrkdwn using bold section headers with quoted catchphrases, bullet points •, and a blockquote > summary):\n\n"
+            f"*1. 기준금리 및 연준(Fed)/한은 동향:* **\"<핵심 요약 헤드라인>\"**\n"
+            f"• <금리 결정, 중앙은행 스탠스, 9월 FOMC/금통위 경계감 등 지표 및 뉴스 내용 상세 분석>\n\n"
+            f"*2. 채권 시장:* **\"<핵심 요약 헤드라인>\"**\n"
+            f"• <장/단기 채권 금리 상방/하방 압력, 수급 부담, 투자자의 채권 저가 매수 심리(고금리 이자 확정 + 시세 차익 기대) 및 분할 매수 동향 상세 분석>\n\n"
+            f"*3. 환율 (원/달러):* **\"<핵심 요약 헤드라인>\"**\n"
+            f"• <원/달러 환율 및 달러 인덱스 등락 배경, 환율 밴드 범위, 수출업체 수급 및 외환시장 반응 상세 분석>\n\n"
+            f"*4. 주식 시장:* **\"<핵심 요약 헤드라인>\"**\n"
+            f"• <KOSPI/KOSDAQ 및 주요 인기/거래량 상위 종목 촉매, 섹터 순환매, 증시 자금 이동 동향 분석>\n\n"
+            f"---\n"
+            f"*💡 한 줄 요약*\n"
+            f"> \"<금리 ➡️ 채권 ➡️ 환율 ➡️ 주가 톱니바퀴 연동 핵심 관전 포인트를 명확한 한 문장으로 요약>\"{watchlist_note}{us_note}\n\n"
             f"STRICT RULES:\n"
-            f"- Write clearly in Korean.\n"
-            f"- Keep total response under 500 words.{watchlist_note}{us_note}\n"
-            f"CRITICAL: Use Slack mrkdwn (*bold*, _italic_). Do NOT use markdown headers (###, ##)."
+            f"- Write entirely in natural, professional Korean.\n"
+            f"- Do NOT use markdown headers like ### or ## (Slack does not support them). Use *bold* text.\n"
+            f"- Use bullet points (•) for detailed items under each section.\n"
+            f"- Keep total response under 550 words."
         )
 
         # 1. Anthropic Claude

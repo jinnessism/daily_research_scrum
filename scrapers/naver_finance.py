@@ -81,7 +81,7 @@ class KoreanMarketDataAdvanced:
         # (key, [tickers to try in order])
         sources = [
             ('us10y', ['FRED:DGS10']),
-            ('usdkrw', ['FRED:DEXKOUS', 'USD/KRW']),
+            ('usdkrw', ['USD/KRW', 'FRED:DEXKOUS']),
             ('nasdaq', ['IXIC']),
             ('sp500', ['US500']),
             ('sox', ['^SOX', 'SOXX']),
