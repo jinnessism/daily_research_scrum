@@ -26,7 +26,9 @@ class MarketReasoningAgent:
         market_data: Dict,
         history: List[Dict] = [],
         global_context: Dict = None,
-        macro_data: Dict = None
+        macro_data: Dict = None,
+        trending_themes: List[Dict] = None,
+        daily_concept: Dict = None
     ) -> str:
         today_date = datetime.now().strftime('%Y-%m-%d')
         yesterday_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
@@ -55,9 +57,19 @@ class MarketReasoningAgent:
                 for n in news_items[:6]
             ]
             macro_block = (
-                "\n\n*🏛️ 거시경제 4대 지표 및 당일 주요 뉴스 (Base Rates, Bond Yields, FX, Stocks & News):*\n"
+                "\n\n*🏛️ 거시경제 4대 지표 및 당일 주요 뉴스:*\n"
                 + "*주요 지표:* \n" + "\n".join(ind_lines)
                 + "\n\n*당일 거시경제 주요 뉴스:* \n" + "\n".join(news_lines)
+            )
+
+        theme_block = ""
+        if trending_themes:
+            lines = [
+                f"- [{t.get('name')}] ({t.get('change_rate')}) 대장주: {t.get('leader')}"
+                for t in trending_themes[:5]
+            ]
+            theme_block = (
+                "\n\n*🔥 단기 부상 섹터 & 주도 테마:* \n" + "\n".join(lines)
             )
 
         history_block = ""
@@ -86,8 +98,8 @@ class MarketReasoningAgent:
         )
 
         prompt = (
-            f"Here is the daily market data, macro 4 indicators (기준금리, 채권금리, 환율, 주가), and latest macro news:\n"
-            f"{market_data}{history_block}{global_block}{macro_block}\n\n"
+            f"Here is the daily market data, macro 4 indicators (기준금리, 채권금리, 환율, 주가), latest macro/finance news, and trending themes:\n"
+            f"{market_data}{history_block}{global_block}{macro_block}{theme_block}\n\n"
             f"Today is {today_date}. Generate a structured Korean macroeconomic & market briefing report for today/yesterday ({yesterday_date}).\n\n"
             f"REQUIRED FORMAT (Follow this exact structure in Slack mrkdwn using bold section headers with quoted catchphrases, bullet points •, and a blockquote > summary):\n\n"
             f"*1. 기준금리 및 연준(Fed)/한은 동향:* **\"<핵심 요약 헤드라인>\"**\n"
@@ -96,8 +108,8 @@ class MarketReasoningAgent:
             f"• <장/단기 채권 금리 상방/하방 압력, 수급 부담, 투자자의 채권 저가 매수 심리(고금리 이자 확정 + 시세 차익 기대) 및 분할 매수 동향 상세 분석>\n\n"
             f"*3. 환율 (원/달러):* **\"<핵심 요약 헤드라인>\"**\n"
             f"• <원/달러 환율 및 달러 인덱스 등락 배경, 환율 밴드 범위, 수출업체 수급 및 외환시장 반응 상세 분석>\n\n"
-            f"*4. 주식 시장:* **\"<핵심 요약 헤드라인>\"**\n"
-            f"• <KOSPI/KOSDAQ 및 주요 인기/거래량 상위 종목 촉매, 섹터 순환매, 증시 자금 이동 동향 분석>\n\n"
+            f"*4. 주식 시장 & 단기 부상 섹터:* **\"<핵심 요약 헤드라인>\"**\n"
+            f"• <KOSPI/KOSDAQ, 오늘 상승세를 탄 단기 부상 테마/섹터(방산, AI, 반도체 등) 및 주요 인기 종목 촉매 분석>\n\n"
             f"---\n"
             f"*💡 한 줄 요약*\n"
             f"> \"<금리 ➡️ 채권 ➡️ 환율 ➡️ 주가 톱니바퀴 연동 핵심 관전 포인트를 명확한 한 문장으로 요약>\"{watchlist_note}{us_note}\n\n"

@@ -211,12 +211,124 @@ class AdvancedSlackFormatter:
         return blocks
 
     @staticmethod
+    def create_theme_blocks(trending_themes: List[Dict]) -> List[Dict]:
+        """Render trending themes & emerging sectors."""
+        if not trending_themes:
+            return []
+
+        blocks: List[Dict[str, Any]] = [
+            {"type": "divider"},
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": "🔥 단기 부상 섹터 & 주도 테마",
+                    "emoji": True
+                }
+            }
+        ]
+
+        lines = []
+        for t in trending_themes[:5]:
+            name = t.get('name', '')
+            rate = t.get('change_rate', '')
+            leader = t.get('leader', 'N/A')
+            link = t.get('link', 'https://stock.naver.com/')
+            lines.append(f"• *<{link}|{name}>* `{rate}` | 대장주: _{leader}_")
+
+        blocks.append({
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": "\n".join(lines)}
+        })
+        return blocks
+
+    @staticmethod
+    def create_concept_blocks(daily_concept: Dict) -> List[Dict]:
+        """Render daily educational financial & economic concept."""
+        if not daily_concept:
+            return []
+
+        term = daily_concept.get('term', '')
+        category = daily_concept.get('category', '경제상식')
+        summary = daily_concept.get('summary', '')
+        detail = daily_concept.get('detail', '')
+        takeaway = daily_concept.get('takeaway', '')
+
+        text = (
+            f"*📌 [{category}] {term}*\n"
+            f"_{summary}_\n\n"
+            f"• *상세 설명*: {detail}\n"
+            f"• *💡 투자자 실전 체크 포인트*: {takeaway}"
+        )
+
+        return [
+            {"type": "divider"},
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": "💡 오늘의 금융 · 경제 상식",
+                    "emoji": True
+                }
+            },
+            {
+                "type": "section",
+                "text": {"type": "mrkdwn", "text": text}
+            }
+        ]
+
+    @staticmethod
+    def create_paper_blocks(papers_dict: Dict[str, List[Dict]]) -> List[Dict]:
+        blocks: List[Dict[str, Any]] = [
+            {"type": "divider"},
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": "📚 Latest arXiv Papers",
+                    "emoji": True
+                }
+            }
+        ]
+
+        for topic, papers in papers_dict.items():
+            blocks.append({
+                "type": "section",
+                "text": {"type": "mrkdwn", "text": f"*{topic}*"}
+            })
+
+            if not papers:
+                blocks.append({
+                    "type": "section",
+                    "text": {"type": "mrkdwn", "text": "_No new papers found_"}
+                })
+                continue
+
+            for i, paper in enumerate(papers, 1):
+                keywords = paper.get('keywords', [])
+                paper_text = (
+                    f"{i}. *{paper['title'][:70]}{'...' if len(paper['title']) > 70 else ''}*\n"
+                    f"👤 {', '.join(paper['authors'][:2])}\n"
+                    f"📅 {paper['published']}"
+                    + (f" | 🏷️ {', '.join(keywords[:2])}" if keywords else "") + "\n"
+                    f"<{paper['url']}|arXiv> • <{paper['pdf_url']}|PDF>"
+                )
+                blocks.append({
+                    "type": "section",
+                    "text": {"type": "mrkdwn", "text": paper_text}
+                })
+
+        return blocks
+
+    @staticmethod
     def create_full_payload(
         market_data: Dict,
         papers_dict: Dict[str, List[Dict]],
         ai_reasoning: str = "",
         global_context: Dict = None,
-        macro_data: Dict = None
+        macro_data: Dict = None,
+        trending_themes: List[Dict] = None,
+        daily_concept: Dict = None
     ) -> str:
         blocks: List[Dict[str, Any]] = [
             {
@@ -236,6 +348,9 @@ class AdvancedSlackFormatter:
         if macro_data:
             blocks.extend(AdvancedSlackFormatter.create_macro_blocks(macro_data))
 
+        if trending_themes:
+            blocks.extend(AdvancedSlackFormatter.create_theme_blocks(trending_themes))
+
         if ai_reasoning:
             blocks.append({"type": "divider"})
             blocks.append({
@@ -252,6 +367,9 @@ class AdvancedSlackFormatter:
                     "type": "section",
                     "text": {"type": "mrkdwn", "text": ai_reasoning[i:i + max_len]}
                 })
+
+        if daily_concept:
+            blocks.extend(AdvancedSlackFormatter.create_concept_blocks(daily_concept))
 
         blocks.extend(AdvancedSlackFormatter.create_paper_blocks(papers_dict))
 

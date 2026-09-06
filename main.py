@@ -13,6 +13,8 @@ from typing import Dict, List
 
 from scrapers.naver_finance import KoreanMarketDataAdvanced
 from scrapers.macro_news import MacroNewsCollector
+from scrapers.sector_tracker import SectorTracker
+from scrapers.finance_concepts import FinanceConceptManager
 from scrapers.arxiv_api import AdvancedArxivCollector
 from agents.market_reasoner import MarketReasoningAgent
 from formatters.slack_formatter import AdvancedSlackFormatter
@@ -95,7 +97,7 @@ def main():
     except Exception as e:
         logger.warning(f"Global market context collection failed: {e}")
 
-    # 2c. Collect Macro 4 Key Indicators & Daily Macro News (기준금리, 채권금리, 환율, 주가 & 뉴스)
+    # 2c. Collect Macro 4 Key Indicators & Daily Macro News
     logger.info("🏛️ Collecting macro 4 indicators & daily news...")
     macro_data = None
     try:
@@ -103,6 +105,23 @@ def main():
         logger.info(f"📰 {len(macro_data.get('news', []))} macro news items collected")
     except Exception as e:
         logger.warning(f"Macro news collection failed: {e}")
+
+    # 2d. Collect Trending Themes & Emerging Sectors
+    logger.info("🔥 Collecting trending themes & emerging sectors...")
+    trending_themes = None
+    try:
+        trending_themes = SectorTracker.get_trending_themes()
+        logger.info(f"🔥 {len(trending_themes)} trending themes collected")
+    except Exception as e:
+        logger.warning(f"Trending theme collection failed: {e}")
+
+    # 2e. Load Daily Educational Financial Concept
+    logger.info("💡 Loading daily educational financial concept...")
+    daily_concept = None
+    try:
+        daily_concept = FinanceConceptManager.get_daily_concept()
+    except Exception as e:
+        logger.warning(f"Daily concept loading failed: {e}")
 
     # 3. Collect arXiv papers (duplicate-filtered)
     logger.info("📚 Collecting arXiv papers...")
@@ -115,7 +134,7 @@ def main():
     if datetime.now().weekday() in (1, 2, 3, 4, 5):
         logger.info("🧠 Generating AI market & macro reasoning...")
         ai_reasoning = MarketReasoningAgent.generate_reasoning(
-            market_data, history, global_context, macro_data
+            market_data, history, global_context, macro_data, trending_themes, daily_concept
         )
         if not ai_reasoning:
             has_key = any(
@@ -130,7 +149,7 @@ def main():
     # 5. Build Slack payload
     logger.info("✍️ Generating Slack payload...")
     payload = AdvancedSlackFormatter.create_full_payload(
-        market_data, papers_dict, ai_reasoning, global_context, macro_data
+        market_data, papers_dict, ai_reasoning, global_context, macro_data, trending_themes, daily_concept
     )
 
     payload_json = json.loads(payload)

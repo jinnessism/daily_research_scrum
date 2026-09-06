@@ -151,10 +151,10 @@ class MacroNewsCollector:
         Returns a list of dicts with keys: title, link, published, source, category.
         """
         queries = [
-            ("기준금리/연준", "기준금리 OR 연준 OR 한국은행 OR 금리인하 OR 금리인상"),
-            ("채권/금리", "채권금리 OR 국채금리 OR 미국채 OR 국고채 OR 채권매수"),
-            ("환율/달러", "환율 OR 원달러 OR 달러강세 OR 환율상승"),
-            ("증시/주가", "주가 OR 증시 OR 코스피 OR 증시전망")
+            ("금융/거시", "글로벌 금융 OR 경기동향 OR 수출입 OR 산업동향 OR 무역"),
+            ("부상 섹터", "반도체 OR AI OR 방산 OR 바이오 OR 주도 테마 OR 실적"),
+            ("금리/통화정책", "기준금리 OR 연준 OR 한국은행 OR 채권금리"),
+            ("증시/환율", "환율 OR 코스피 OR 증시전망 OR 외국인순매수")
         ]
 
         articles: List[Dict[str, str]] = []
