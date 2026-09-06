@@ -74,20 +74,30 @@ class MacroNewsCollector:
             'us2y': None,
             'kr3y': None,
             'kr10y': None,
-            'fed_rate': {'label': 'US Fed Target Rate', 'value': '5.25~5.50%'},
-            'bok_rate': {'label': 'BOK Base Rate', 'value': '3.50%'},
+            'fed_rate': {'label': 'US Fed Target Rate', 'value': '3.50~3.75%'},
+            'bok_rate': {'label': 'BOK Base Rate', 'value': '3.00%'},
             'usdkrw': None,
             'usdx': None,
         }
 
-        start = (datetime.now() - timedelta(days=10)).strftime('%Y-%m-%d')
+        start = (datetime.now() - timedelta(days=15)).strftime('%Y-%m-%d')
 
-        # 1. US Treasury Bond Yields via FDR (FRED)
+        # 1. US Treasury Bond Yields & Dynamic Fed Target Rate via FDR (FRED)
         if _HAS_FDR:
+            # Dynamic Fed Target Rate Range (Upper & Lower limits)
+            try:
+                df_u = fdr.DataReader('FRED:DFEDTARU', start)
+                df_l = fdr.DataReader('FRED:DFEDTARL', start)
+                if len(df_u) > 0 and len(df_l) > 0:
+                    u_val = float(df_u.iloc[-1, 0])
+                    l_val = float(df_l.iloc[-1, 0])
+                    indicators['fed_rate']['value'] = f"{l_val:.2f}~{u_val:.2f}%"
+            except Exception as e:
+                logger.warning(f"Failed to fetch dynamic Fed target rate: {e}")
+
             for ticker, key, label in [
                 ('FRED:DGS10', 'us10y', 'US 10Y Treasury Yield'),
                 ('FRED:DGS2', 'us2y', 'US 2Y Treasury Yield'),
-                ('FRED:DEXKOUS', 'usdkrw', 'USD/KRW FX Rate'),
             ]:
                 try:
                     df = fdr.DataReader(ticker, start)
@@ -97,25 +107,19 @@ class MacroNewsCollector:
                         chg = last_val - prev_val
                         sign = '+' if chg >= 0 else ''
                         arrow = '▲ ' if chg > 0 else ('▼ ' if chg < 0 else '')
-                        if 'Yield' in label:
-                            indicators[key] = {
-                                'label': label,
-                                'value': f"{last_val:.2f}%",
-                                'change': f"{arrow}{sign}{chg:.2f}%p"
-                            }
-                        else:
-                            indicators[key] = {
-                                'label': label,
-                                'value': f"{last_val:,.2f}",
-                                'change': f"{arrow}{sign}{chg:.2f}"
-                            }
+                        indicators[key] = {
+                            'label': label,
+                            'value': f"{last_val:.2f}%",
+                            'change': f"{arrow}{sign}{chg:.2f}%p"
+                        }
                 except Exception as e:
                     logger.warning(f"FDR fetch failed for {ticker}: {e}")
 
-        # 2. KR Bond Yields, USD/KRW & Dollar Index via Naver Finance
+        # 2. KR Bond Yields, BOK Call Rate, USD/KRW & Dollar Index via Naver Finance
         naver_codes = [
             ('IRR_GOVT03Y', 'interestDetail.naver', 'kr3y', 'KR 3Y Govt Bond Yield'),
             ('IRR_CORP03Y', 'interestDetail.naver', 'kr10y', 'KR 3Y Corporate Bond Yield'),
+            ('IRR_CALL', 'interestDetail.naver', 'bok_rate', 'BOK Call Rate'),
             ('FX_USDKRW', 'exchangeDetail.naver', 'usdkrw', 'USD/KRW FX Rate'),
             ('FX_USDX', 'worldExchangeDetail.naver', 'usdx', 'Dollar Index (USDX)'),
         ]
@@ -132,12 +136,20 @@ class MacroNewsCollector:
                     val = val_el.text.strip().replace('\n', '').replace('원', '').replace('%', '')
                     is_yield = "Yield" in label or "Bond" in label
                     exday = cls._parse_naver_exday(exday_el.text, is_yield=is_yield)
-                    unit = "%" if is_yield else ""
-                    indicators[key] = {
-                        'label': label,
-                        'value': f"{val}{unit}",
-                        'change': exday
-                    }
+                    unit = "%" if (is_yield or "Rate" in label) and key != 'usdkrw' else ""
+                    if key == 'bok_rate':
+                        # Use Call rate (e.g. 3.01%) as dynamic BOK Base Rate benchmark
+                        indicators['bok_rate'] = {
+                            'label': 'BOK Base Rate',
+                            'value': f"{float(val):.2f}%",
+                            'change': exday
+                        }
+                    else:
+                        indicators[key] = {
+                            'label': label,
+                            'value': f"{val}{unit}",
+                            'change': exday
+                        }
             except Exception as e:
                 logger.warning(f"Naver marketindex fetch failed for {cd}: {e}")
 
