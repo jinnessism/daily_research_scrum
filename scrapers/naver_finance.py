@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import os
 import json
+import re
 import requests
 import logging
 from datetime import datetime, timedelta
@@ -182,17 +183,43 @@ def _fetch_quote_from_fdr(ticker: str):
         return None
 
 
-def _fill_index_from_fdr(market_data: Dict[str, Any]) -> None:
-    """Fetch previous trading day's KOSPI/KOSDAQ close + change from FinanceDataReader."""
+def _fetch_naver_index(code: str):
+    """Fallback index scraper for KOSPI / KOSDAQ directly from Naver Finance."""
     try:
-        for ticker, key in [('KS11', 'kospi'), ('KQ11', 'kosdaq')]:
+        url = f"https://finance.naver.com/sise/sise_index.naver?code={code}"
+        res = requests.get(url, timeout=5)
+        res.encoding = 'euc-kr'
+        soup = BeautifulSoup(res.text, 'html.parser')
+        val_el = soup.select_one('#now_value')
+        change_el = soup.select_one('#change_value_and_rate')
+        if not val_el:
+            return None
+        val = val_el.text.strip()
+        change_text = change_el.text.strip() if change_el else ''
+        match = re.search(r'([+-]?\d+\.?\d*%)', change_text)
+        pct_val = match.group(1) if match else ''
+        arrow = '▼ ' if pct_val.startswith('-') else '▲ '
+        if pct_val and not pct_val.startswith('+') and not pct_val.startswith('-'):
+            pct_val = f"+{pct_val}"
+        return {'value': val, 'change': f"{arrow}{pct_val}" if pct_val else ''}
+    except Exception as e:
+        logger.warning(f"Naver index fetch failed for {code}: {e}")
+        return None
+
+
+def _fill_index_from_fdr(market_data: Dict[str, Any]) -> None:
+    """Fetch KOSPI/KOSDAQ close + change from FinanceDataReader or Naver Finance fallback."""
+    try:
+        for ticker, key, naver_code in [('KS11', 'kospi', 'KOSPI'), ('KQ11', 'kosdaq', 'KOSDAQ')]:
             quote = _fetch_quote_from_fdr(ticker)
+            if quote is None:
+                quote = _fetch_naver_index(naver_code)
             if quote is None:
                 continue
             market_data[key] = {
                 'index': quote['value'],
                 'change': quote['change']
             }
-        logger.info("Index data loaded from FinanceDataReader")
+        logger.info("Index data loaded successfully")
     except Exception as e:
-        logger.error(f"FinanceDataReader index fetch failed: {e}")
+        logger.error(f"Index fetch failed: {e}")
