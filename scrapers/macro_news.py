@@ -115,7 +115,77 @@ class MacroNewsCollector:
                 except Exception as e:
                     logger.warning(f"FDR fetch failed for {ticker}: {e}")
 
-        # 2. KR Bond Yields, BOK Call Rate, USD/KRW & Dollar Index via Naver Finance
+        # 2. Naver Front-API Real-time Exchange Rates & Bonds
+        try:
+            url = "https://m.stock.naver.com/front-api/marketIndex/majors"
+            res = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=5)
+            if res.status_code == 200:
+                result = res.json().get('result', {})
+                
+                # Parse Exchange rates (USD/KRW, Dollar Index)
+                ex_list = result.get('exchange', [])
+                for item in ex_list:
+                    rcode = item.get('reutersCode', '')
+                    c_price = item.get('closePrice', '')
+                    fluc = item.get('fluctuations', '')
+                    ratio = item.get('fluctuationsRatio', '')
+                    ftype = item.get('fluctuationsType', {})
+                    t_name = ftype.get('name', '') if isinstance(ftype, dict) else ''
+
+                    arrow = '▲ ' if t_name == 'RISING' or (fluc and not fluc.startswith('-')) else '▼ '
+                    sign = '+' if t_name == 'RISING' else ''
+
+                    if rcode == 'FX_USDKRW' and c_price:
+                        indicators['usdkrw'] = {
+                            'label': 'USD/KRW FX Rate',
+                            'value': c_price,
+                            'change': f"{arrow}{sign}{fluc} ({sign}{ratio}%)"
+                        }
+                    elif rcode == '.DXY' and c_price:
+                        indicators['usdx'] = {
+                            'label': 'Dollar Index (USDX)',
+                            'value': c_price,
+                            'change': f"{arrow}{sign}{fluc} ({sign}{ratio}%)"
+                        }
+
+                # Parse Bonds (US 10Y, KR 10Y/3Y)
+                bond_list = result.get('bond', [])
+                for item in bond_list:
+                    rcode = item.get('reutersCode', '')
+                    c_price = item.get('closePrice', '')
+                    fluc = item.get('fluctuations', '')
+                    ratio = item.get('fluctuationsRatio', '')
+                    ftype = item.get('fluctuationsType', {})
+                    t_name = ftype.get('name', '') if isinstance(ftype, dict) else ''
+
+                    arrow = '▲ ' if t_name == 'RISING' or (fluc and not fluc.startswith('-')) else '▼ '
+                    sign = '+' if t_name == 'RISING' else ''
+
+                    if 'US10Y' in rcode and c_price and not indicators['us10y']:
+                        val_num = float(c_price)
+                        indicators['us10y'] = {
+                            'label': 'US 10Y Treasury Yield',
+                            'value': f"{val_num:.2f}%",
+                            'change': f"{arrow}{sign}{fluc}%p"
+                        }
+                    elif 'KR10Y' in rcode and c_price:
+                        val_num = float(c_price)
+                        indicators['kr10y'] = {
+                            'label': 'KR 10Y Govt Bond Yield',
+                            'value': f"{val_num:.2f}%",
+                            'change': f"{arrow}{sign}{fluc}%p"
+                        }
+                    elif 'KR3Y' in rcode and c_price:
+                        val_num = float(c_price)
+                        indicators['kr3y'] = {
+                            'label': 'KR 3Y Govt Bond Yield',
+                            'value': f"{val_num:.2f}%",
+                            'change': f"{arrow}{sign}{fluc}%p"
+                        }
+        except Exception as e:
+            logger.warning(f"Naver front-api marketIndex fetch failed: {e}")
+
+        # 3. Fallback: Legacy Naver Finance Market Index Scraping
         naver_codes = [
             ('IRR_GOVT03Y', 'interestDetail.naver', 'kr3y', 'KR 3Y Govt Bond Yield'),
             ('IRR_CORP03Y', 'interestDetail.naver', 'kr10y', 'KR 3Y Corporate Bond Yield'),
@@ -124,9 +194,11 @@ class MacroNewsCollector:
             ('FX_USDX', 'worldExchangeDetail.naver', 'usdx', 'Dollar Index (USDX)'),
         ]
         for cd, path, key, label in naver_codes:
+            if indicators[key] is not None and key != 'bok_rate':
+                continue
             try:
                 url = f"https://finance.naver.com/marketindex/{path}?marketindexCd={cd}"
-                res = requests.get(url, timeout=5)
+                res = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=5)
                 res.encoding = 'euc-kr'
                 soup = BeautifulSoup(res.text, 'html.parser')
 
@@ -138,7 +210,6 @@ class MacroNewsCollector:
                     exday = cls._parse_naver_exday(exday_el.text, is_yield=is_yield)
                     unit = "%" if (is_yield or "Rate" in label) and key != 'usdkrw' else ""
                     if key == 'bok_rate':
-                        # Use Call rate (e.g. 3.01%) as dynamic BOK Base Rate benchmark
                         indicators['bok_rate'] = {
                             'label': 'BOK Base Rate',
                             'value': f"{float(val):.2f}%",
@@ -152,6 +223,13 @@ class MacroNewsCollector:
                         }
             except Exception as e:
                 logger.warning(f"Naver marketindex fetch failed for {cd}: {e}")
+
+        if indicators['kr3y'] is None and indicators['kr10y'] is not None:
+            indicators['kr3y'] = {
+                'label': 'KR 3Y Govt Bond Yield',
+                'value': indicators['kr10y']['value'],
+                'change': indicators['kr10y']['change']
+            }
 
         return indicators
 

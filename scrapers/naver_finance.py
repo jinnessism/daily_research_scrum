@@ -114,25 +114,41 @@ class KoreanMarketDataAdvanced:
             'classification': {}
         }
 
-        # 1. Index data: FinanceDataReader (primary) — always reflects previous trading day's close
+        # 1. Index data: FinanceDataReader (primary) with Naver front-api fallback
         if _HAS_FDR:
             _fill_index_from_fdr(market_data)
         else:
-            logger.warning("FinanceDataReader not available — index data will be N/A")
+            _fill_index_from_naver_api(market_data)
 
-        # 2. Trending stocks: Naver Finance scraping (independent of index data)
+        # Ensure index data is populated via Naver API if FDR was N/A
+        if market_data['kospi']['index'] == 'N/A':
+            _fill_index_from_naver_api(market_data)
+
+        # 2. Trending stocks: Naver front-api popular stock list
         try:
-            res = requests.get("https://finance.naver.com/", timeout=5)
-            res.encoding = 'euc-kr'
-            soup = BeautifulSoup(res.text, "html.parser")
+            top_stocks = []
+            quant_stocks = []
+            url = "https://m.stock.naver.com/front-api/domestic/stock/list/popular?marketType=all"
+            res = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=5)
+            if res.status_code == 200:
+                data = res.json().get('result', {})
+                items = data.get('items', [])
+                if items:
+                    top_stocks = [item.get('name', '') for item in items[:5] if item.get('name')]
+                    sorted_by_vol = sorted(items, key=lambda x: x.get('accumulatedTradingVolume', 0), reverse=True)
+                    quant_stocks = [item.get('name', '') for item in sorted_by_vol[:5] if item.get('name')]
 
-            pop_list = soup.select(
-                "#container > div.aside > div > div.aside_area.aside_popular > table > tbody > tr > th > a"
-            )
-            top_stocks = [a.text for a in pop_list[:5]]
-
-            quant_list = soup.select("#_topItems1 tr th a")
-            quant_stocks = [a.text for a in quant_list[:5]]
+            # Fallback to legacy scraping if API returns empty
+            if not top_stocks:
+                h_res = requests.get("https://finance.naver.com/", headers={'User-Agent': 'Mozilla/5.0'}, timeout=5)
+                h_res.encoding = 'euc-kr'
+                soup = BeautifulSoup(h_res.text, "html.parser")
+                pop_list = soup.select(
+                    "#container > div.aside > div > div.aside_area.aside_popular > table > tbody > tr > th > a"
+                )
+                top_stocks = [a.text for a in pop_list[:5]]
+                quant_list = soup.select("#_topItems1 tr th a")
+                quant_stocks = [a.text for a in quant_list[:5]]
 
             all_trending = list(dict.fromkeys(top_stocks + quant_stocks))
             market_data['classification'] = cls._classify_trending_stocks(all_trending)
@@ -149,7 +165,7 @@ class KoreanMarketDataAdvanced:
             }
 
         except Exception as e:
-            logger.warning(f"Naver trending scraping failed: {e}")
+            logger.warning(f"Naver trending stock fetch failed: {e}")
 
         return market_data
 
@@ -184,10 +200,31 @@ def _fetch_quote_from_fdr(ticker: str):
 
 
 def _fetch_naver_index(code: str):
-    """Fallback index scraper for KOSPI / KOSDAQ directly from Naver Finance."""
+    """Fallback index scraper for KOSPI / KOSDAQ via Naver front-api or legacy page."""
     try:
+        # Try Naver front-api first
+        res = requests.get("https://m.stock.naver.com/front-api/domestic/index/majors", headers={'User-Agent': 'Mozilla/5.0'}, timeout=5)
+        if res.status_code == 200:
+            items = res.json().get('result', [])
+            for item in items:
+                item_code = item.get('itemCode', '').upper()
+                if item_code == code.upper() or item.get('id', '').upper() == code.upper():
+                    val = f"{float(item.get('currentPrice', 0)):,.2f}"
+                    ratio_raw = str(item.get('fluctuationsRatio', '0.00'))
+                    ratio_val = float(ratio_raw)
+                    ftype = item.get('fluctuationsType', '')
+                    if ftype == 'FALLING' or ratio_val < 0:
+                        arrow = '▼ '
+                        sign = '-' if not ratio_raw.startswith('-') else ''
+                    else:
+                        arrow = '▲ '
+                        sign = '+' if not ratio_raw.startswith('+') else ''
+                    clean_ratio = ratio_raw.lstrip('+-')
+                    return {'value': val, 'change': f"{arrow}{sign}{clean_ratio}%"}
+
+        # Legacy HTML fallback
         url = f"https://finance.naver.com/sise/sise_index.naver?code={code}"
-        res = requests.get(url, timeout=5)
+        res = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=5)
         res.encoding = 'euc-kr'
         soup = BeautifulSoup(res.text, 'html.parser')
         val_el = soup.select_one('#now_value')
@@ -205,6 +242,15 @@ def _fetch_naver_index(code: str):
     except Exception as e:
         logger.warning(f"Naver index fetch failed for {code}: {e}")
         return None
+
+
+def _fill_index_from_naver_api(market_data: Dict[str, Any]) -> None:
+    """Fill KOSPI / KOSDAQ index directly from Naver front-api."""
+    for key, code in [('kospi', 'KOSPI'), ('kosdaq', 'KOSDAQ')]:
+        if market_data[key]['index'] == 'N/A':
+            quote = _fetch_naver_index(code)
+            if quote:
+                market_data[key] = {'index': quote['value'], 'change': quote['change']}
 
 
 def _fill_index_from_fdr(market_data: Dict[str, Any]) -> None:
