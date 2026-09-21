@@ -1,14 +1,5 @@
 [
   {
-    "date": "2026-09-11",
-    "kospi_index": "7,033.92",
-    "kospi_change": "-0.25%",
-    "kosdaq_index": "836.92",
-    "kosdaq_change": "+0.79%",
-    "top_searched": [],
-    "top_volume": []
-  },
-  {
     "date": "2026-09-12",
     "kospi_index": "6,909.91",
     "kospi_change": "-1.76%",
@@ -108,6 +99,27 @@
       "성호전자",
       "우리로",
       "삼성전자"
+    ]
+  },
+  {
+    "date": "2026-09-22",
+    "kospi_index": "6,724.34",
+    "kospi_change": "+0.09%",
+    "kosdaq_index": "821.67",
+    "kosdaq_change": "+0.70%",
+    "top_searched": [
+      "삼성전자",
+      "SK하이닉스",
+      "두산에너빌리티",
+      "HLB",
+      "현대차"
+    ],
+    "top_volume": [
+      "삼성전자",
+      "SK하이닉스",
+      "두산에너빌리티",
+      "HLB",
+      "현대차"
     ]
   }
 ]
