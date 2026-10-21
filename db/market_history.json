@@ -1,26 +1,5 @@
 [
   {
-    "date": "2026-10-13",
-    "kospi_index": "6,384.24",
-    "kospi_change": "▲ +0.00%",
-    "kosdaq_index": "849.19",
-    "kosdaq_change": "▲ +0.00%",
-    "top_searched": [
-      "삼성전자",
-      "SK하이닉스",
-      "두산에너빌리티",
-      "HLB",
-      "현대차"
-    ],
-    "top_volume": [
-      "삼성전자",
-      "SK하이닉스",
-      "두산에너빌리티",
-      "HLB",
-      "현대차"
-    ]
-  },
-  {
     "date": "2026-10-14",
     "kospi_index": "6,035.35",
     "kospi_change": "-5.46%",
@@ -144,6 +123,27 @@
       "엘리스",
       "삼성전기",
       "삼성SDI"
+    ]
+  },
+  {
+    "date": "2026-10-22",
+    "kospi_index": "5,735.66",
+    "kospi_change": "+3.29%",
+    "kosdaq_index": "792.76",
+    "kosdaq_change": "+1.38%",
+    "top_searched": [
+      "삼성전자",
+      "SK하이닉스",
+      "삼성전기",
+      "삼성SDI",
+      "HLB"
+    ],
+    "top_volume": [
+      "삼성전자",
+      "SK하이닉스",
+      "삼성전기",
+      "삼성SDI",
+      "HLB"
     ]
   }
 ]
