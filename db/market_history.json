@@ -1,26 +1,5 @@
 [
   {
-    "date": "2026-10-20",
-    "kospi_index": "5,768.01",
-    "kospi_change": "+1.76%",
-    "kosdaq_index": "808.89",
-    "kosdaq_change": "+1.78%",
-    "top_searched": [
-      "삼성전자",
-      "SK하이닉스",
-      "삼성SDI",
-      "삼성전기",
-      "현대차"
-    ],
-    "top_volume": [
-      "삼성전자",
-      "SK하이닉스",
-      "삼성SDI",
-      "삼성전기",
-      "현대차"
-    ]
-  },
-  {
     "date": "2026-10-21",
     "kospi_index": "5,552.74",
     "kospi_change": "-3.73%",
@@ -143,6 +122,27 @@
       "삼성전자",
       "NAVER",
       "삼성전기",
+      "삼성SDI"
+    ]
+  },
+  {
+    "date": "2026-10-29",
+    "kospi_index": "6,012.44",
+    "kospi_change": "+6.63%",
+    "kosdaq_index": "771.28",
+    "kosdaq_change": "+3.69%",
+    "top_searched": [
+      "삼성전자",
+      "SK하이닉스",
+      "삼성전기",
+      "NAVER",
+      "삼성SDI"
+    ],
+    "top_volume": [
+      "삼성전자",
+      "SK하이닉스",
+      "삼성전기",
+      "NAVER",
       "삼성SDI"
     ]
   }
