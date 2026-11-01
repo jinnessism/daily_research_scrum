@@ -7,6 +7,9 @@ import BackpropDemo from '@/components/viz/BackpropDemo';
 import ActivationPlot from '@/components/viz/ActivationPlot';
 import NetworkView from '@/components/viz/NetworkView';
 import ConvDemo from '@/components/viz/ConvDemo';
+import RnnDemo from '@/components/viz/RnnDemo';
+import DiffusionDemo from '@/components/viz/DiffusionDemo';
+import RlDemo from '@/components/viz/RlDemo';
 
 const TABS = [
   { id: 'autograd', label: 'Autograd graph', el: <AutogradGraphDemo /> },
@@ -14,6 +17,9 @@ const TABS = [
   { id: 'backprop', label: 'Backprop (MLP)', el: <BackpropDemo /> },
   { id: 'act', label: 'Activations', el: <ActivationPlot /> },
   { id: 'conv', label: 'Convolution', el: <ConvDemo /> },
+  { id: 'rnn', label: 'RNN', el: <RnnDemo /> },
+  { id: 'diffusion', label: 'Diffusion', el: <DiffusionDemo /> },
+  { id: 'rl', label: 'RL', el: <RlDemo /> },
   { id: 'arch', label: 'Architecture', el: <NetworkView /> },
 ];
 

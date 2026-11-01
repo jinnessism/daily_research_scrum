@@ -115,6 +115,36 @@ print(x.grad)
     expect(r.output).toContain('tensor([[2., 2.], [2., 2.]])');
   });
 
+  it('runs the RNN single-timestep snippet (multi-line matmul + tanh)', () => {
+    const r = runScript(`
+import torch
+x   = torch.tensor([[1.0]])
+h   = torch.tensor([[0.0, 0.0, 0.0]])
+Wxh = torch.tensor([[0.5, -0.4, 0.9]])
+Whh = torch.tensor([[0.1, 0.0, -0.2],
+                    [0.3, 0.2, 0.1],
+                    [-0.1, 0.4, 0.05]])
+bh  = torch.tensor([0.0, 0.1, -0.1])
+h_next = (x @ Wxh + h @ Whh + bh).tanh()
+print(h_next)
+`);
+    expect(r.error).toBeNull();
+    // tanh([0.5, -0.3, 0.8]) = [0.4621, -0.2913, 0.664]
+    expect(r.output).toContain('tensor([[0.4621, -0.2913, 0.664]])');
+  });
+
+  it('runs the diffusion forward-noising snippet (randn + scalar mul)', () => {
+    const r = runScript(`
+import torch
+x0  = torch.tensor([[2.0, -1.0]])
+eps = torch.randn([1, 2])
+xt = x0 * 0.7746 + eps * 0.6325
+print(xt)
+`);
+    expect(r.error).toBeNull();
+    expect(r.output).toContain('tensor([[');
+  });
+
   it('reports the named tensors after a run', () => {
     const r = runScript(`
 a = torch.ones([2, 2])

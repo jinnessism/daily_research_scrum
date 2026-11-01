@@ -386,6 +386,144 @@ stride.)*`,
       },
     ],
   },
+  {
+    slug: 'rnn',
+    title: '7 · Recurrent networks',
+    summary: 'Process a sequence step by step, carrying a hidden state forward.',
+    blocks: [
+      {
+        type: 'md',
+        content: `# Recurrent networks (RNN)
+
+MLPs and CNNs take a fixed-size input. For **sequences** — text, audio, time
+series — we want to process one element at a time while remembering what came
+before. An RNN keeps a **hidden state** \`h\` and updates it at every timestep with
+the *same* weights:
+
+\`\`\`
+hₜ = tanh(xₜ · Wxh + hₜ₋₁ · Whh + b)
+\`\`\`
+
+\`hₜ₋₁ · Whh\` is the recurrent connection — the network's memory. Running one step
+is just the ops you already know (matmul, add, tanh):`,
+      },
+      {
+        type: 'code',
+        code: `import torch
+
+x   = torch.tensor([[1.0]])              # input at this timestep
+h   = torch.tensor([[0.0, 0.0, 0.0]])    # previous hidden state (3 units)
+Wxh = torch.tensor([[0.5, -0.4, 0.9]])   # (1, 3)
+Whh = torch.tensor([[0.1, 0.0, -0.2],
+                    [0.3, 0.2, 0.1],
+                    [-0.1, 0.4, 0.05]])   # (3, 3)
+bh  = torch.tensor([0.0, 0.1, -0.1])
+
+h_next = (x @ Wxh + h @ Whh + bh).tanh()
+print("new hidden state:")
+print(h_next)`,
+      },
+      {
+        type: 'md',
+        content: `## Unrolling
+
+To handle a whole sequence you call that step in a loop, feeding \`hₜ\` back in as
+\`hₜ₋₁\`. Drawn out, it looks like a very deep network that shares weights across
+"layers" (the timesteps) — this is called **unrolling**, and backprop through it
+is *backprop through time*.
+
+Watch a hidden state evolve across a real sequence on the **Visualize → RNN**
+page: step through the timesteps and see the recurrent arrow carry memory forward.`,
+      },
+    ],
+  },
+  {
+    slug: 'diffusion',
+    title: '8 · Diffusion models',
+    summary: 'Generate data by learning to reverse a gradual noising process.',
+    blocks: [
+      {
+        type: 'md',
+        content: `# Diffusion models
+
+Diffusion models generate data (images, audio, …) by **reversing noise**. There
+are two processes:
+
+- **Forward** — gradually corrupt a data point \`x₀\` with Gaussian noise over many
+  steps until nothing but noise remains. There's a closed form for jumping
+  straight to step \`t\`:
+
+\`\`\`
+xₜ = √ᾱₜ · x₀ + √(1 − ᾱₜ) · ε,     ε ~ N(0, I)
+\`\`\`
+
+where \`ᾱₜ\` shrinks from 1 → 0 as \`t\` grows. Try it on one point:`,
+      },
+      {
+        type: 'code',
+        code: `import torch
+
+x0  = torch.tensor([[2.0, -1.0]])   # a clean data point
+eps = torch.randn([1, 2])            # standard Gaussian noise
+
+# at some timestep t the cumulative alpha_bar = 0.6
+# sqrt(0.6) = 0.7746,  sqrt(1 - 0.6) = 0.6325
+xt = x0 * 0.7746 + eps * 0.6325
+print("noised point:", xt)`,
+      },
+      {
+        type: 'md',
+        content: `- **Reverse** — start from pure noise and step *back* toward the data. A model
+  learns to predict the noise (equivalently, the **score** \`∇log p(x)\`), and we
+  nudge samples uphill along it while slowly lowering the noise level. Repeat and
+  random noise turns into samples that look like the training data.
+
+On the **Visualize → Diffusion** page you can watch a 2-D distribution dissolve
+into noise (forward) and then be reconstructed from noise (reverse) — the target
+is a Gaussian mixture, so the score is exact and no training is needed.`,
+      },
+    ],
+  },
+  {
+    slug: 'rl',
+    title: '9 · Reinforcement learning',
+    summary: 'Learn to act by trial and error to maximize future reward.',
+    blocks: [
+      {
+        type: 'md',
+        content: `# Reinforcement learning (RL)
+
+So far every lesson learned from labeled targets. RL is different: an **agent**
+interacts with an **environment**, takes **actions**, and only gets a **reward**
+signal. There are no labels — it must discover good behavior by trial and error.
+
+The setup is a *Markov decision process*: from state \`s\` the agent picks action
+\`a\`, lands in \`s′\`, and receives reward \`r\`. The goal is to maximize the
+**return** (discounted sum of future rewards) \`r₀ + γr₁ + γ²r₂ + …\`, where
+\`γ ∈ [0,1)\` trades off immediate vs. future reward.
+
+## Q-learning
+
+**Q(s, a)** estimates the return from taking action \`a\` in state \`s\` and acting
+greedily afterward. After each transition we nudge it toward a better estimate
+using the Bellman update:
+
+\`\`\`
+Q(s,a) ← Q(s,a) + α · [ r + γ · maxₐ′ Q(s′,a′) − Q(s,a) ]
+\`\`\`
+
+To keep exploring, the agent acts **ε-greedy**: usually it takes the best known
+action, but with probability \`ε\` it tries a random one.
+
+## See it learn
+
+On the **Visualize → RL** page, a Q-learning agent explores a gridworld. Press
+*Train 50 episodes* a few times and watch value estimates spread outward from the
+goal while the greedy-policy arrows line up into a route that avoids the pit —
+learned purely from reward.`,
+      },
+    ],
+  },
 ];
 
 export function getLesson(slug: string): Lesson | undefined {
