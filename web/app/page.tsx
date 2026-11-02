@@ -20,6 +20,12 @@ const FEATURES = [
     desc: 'See the ideas move: the autograd computation graph, gradient descent fitting data live, activation functions, and neural-network architecture.',
   },
   {
+    href: '/practice/broadcasting',
+    icon: '✏️',
+    title: 'Practice',
+    desc: 'Fill-in-the-blank coding drills for the core computations — forward passes, gradients, conv, an RNN step — auto-graded by running your code, with hints and solutions.',
+  },
+  {
     href: '/reference/tensor-creation',
     icon: '📖',
     title: 'Reference',

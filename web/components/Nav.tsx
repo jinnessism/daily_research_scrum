@@ -7,6 +7,7 @@ const LINKS = [
   { href: '/learn/tensors', label: 'Learn', match: '/learn' },
   { href: '/playground', label: 'Playground', match: '/playground' },
   { href: '/visualize', label: 'Visualize', match: '/visualize' },
+  { href: '/practice/broadcasting', label: 'Practice', match: '/practice' },
   { href: '/reference/tensor-creation', label: 'Reference', match: '/reference' },
 ];
 
