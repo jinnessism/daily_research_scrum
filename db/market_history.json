@@ -1,26 +1,5 @@
 [
   {
-    "date": "2026-11-10",
-    "kospi_index": "5,018.85",
-    "kospi_change": "-0.81%",
-    "kosdaq_index": "638.97",
-    "kosdaq_change": "-0.82%",
-    "top_searched": [
-      "삼성전자",
-      "SK하이닉스",
-      "삼성SDI",
-      "삼성전기",
-      "알테오젠"
-    ],
-    "top_volume": [
-      "삼성전자",
-      "SK하이닉스",
-      "삼성SDI",
-      "삼성전기",
-      "알테오젠"
-    ]
-  },
-  {
     "date": "2026-11-11",
     "kospi_index": "5,239.13",
     "kospi_change": "+4.39%",
@@ -144,6 +123,27 @@
       "삼성전기",
       "두산에너빌리티",
       "NAVER"
+    ]
+  },
+  {
+    "date": "2026-11-19",
+    "kospi_index": "5,067.44",
+    "kospi_change": "+1.99%",
+    "kosdaq_index": "662.81",
+    "kosdaq_change": "+1.96%",
+    "top_searched": [
+      "삼성전자",
+      "SK하이닉스",
+      "삼성전기",
+      "JYP Ent.",
+      "현대차"
+    ],
+    "top_volume": [
+      "삼성전자",
+      "SK하이닉스",
+      "삼성전기",
+      "JYP Ent.",
+      "현대차"
     ]
   }
 ]
