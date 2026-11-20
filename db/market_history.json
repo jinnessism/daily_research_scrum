@@ -1,26 +1,5 @@
 [
   {
-    "date": "2026-11-12",
-    "kospi_index": "5,375.36",
-    "kospi_change": "+2.60%",
-    "kosdaq_index": "705.10",
-    "kosdaq_change": "+5.62%",
-    "top_searched": [
-      "삼성전자",
-      "SK하이닉스",
-      "삼성전기",
-      "NAVER",
-      "두산에너빌리티"
-    ],
-    "top_volume": [
-      "삼성전자",
-      "SK하이닉스",
-      "삼성전기",
-      "NAVER",
-      "두산에너빌리티"
-    ]
-  },
-  {
     "date": "2026-11-13",
     "kospi_index": "5,342.73",
     "kospi_change": "-0.61%",
@@ -144,6 +123,27 @@
       "삼성전기",
       "삼성SDI",
       "SK텔레콤"
+    ]
+  },
+  {
+    "date": "2026-11-21",
+    "kospi_index": "4,869.96",
+    "kospi_change": "-5.21%",
+    "kosdaq_index": "645.68",
+    "kosdaq_change": "-5.71%",
+    "top_searched": [
+      "삼성전자",
+      "SK하이닉스",
+      "삼성전기",
+      "현대차",
+      "NAVER"
+    ],
+    "top_volume": [
+      "KODEX 200선물인버스2X",
+      "KODEX SK하이닉스단일종목레버리지",
+      "KODEX 레버리지",
+      "삼성전자",
+      "대한광통신"
     ]
   }
 ]
